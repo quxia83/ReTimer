@@ -1,0 +1,62 @@
+// hooks/useCooldownStatus.ts
+import { useState, useEffect, useCallback } from "react";
+import { differenceInSeconds } from "date-fns";
+
+export type CooldownStatus = "green" | "yellow" | "red";
+
+interface CooldownState {
+  status: CooldownStatus;
+  remainingSeconds: number;
+  elapsedSeconds: number;
+  lastTakenAt: Date | null;
+}
+
+export function useCooldownStatus(
+  lastTakenAt: string | null,
+  cooldownMin: number, // minutes
+  cooldownMax: number  // minutes
+): CooldownState {
+  const calculate = useCallback((): CooldownState => {
+    if (!lastTakenAt) {
+      return { status: "green", remainingSeconds: 0, elapsedSeconds: 0, lastTakenAt: null };
+    }
+
+    const taken = new Date(lastTakenAt);
+    const elapsed = differenceInSeconds(new Date(), taken);
+    const minSeconds = cooldownMin * 60;
+    const maxSeconds = cooldownMax * 60;
+
+    let status: CooldownStatus;
+    if (elapsed >= maxSeconds) {
+      status = "green";
+    } else if (elapsed >= minSeconds) {
+      status = "yellow";
+    } else {
+      status = "red";
+    }
+
+    return {
+      status,
+      remainingSeconds: Math.max(0, maxSeconds - elapsed),
+      elapsedSeconds: elapsed,
+      lastTakenAt: taken,
+    };
+  }, [lastTakenAt, cooldownMin, cooldownMax]);
+
+  const [state, setState] = useState(calculate);
+
+  useEffect(() => {
+    setState(calculate());
+    if (!lastTakenAt) return;
+
+    const interval = setInterval(() => {
+      const newState = calculate();
+      setState(newState);
+      if (newState.status === "green") clearInterval(interval);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [calculate, lastTakenAt]);
+
+  return state;
+}
