@@ -1,0 +1,91 @@
+{
+  "tabs": {
+    "medications": "Medications",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Medications",
+    "addMedication": "Add Medication",
+    "empty": "No medications yet",
+    "emptyHint": "Add your first medication to start tracking doses",
+    "addFirst": "Add Your First Medication"
+  },
+  "medication": {
+    "add": "Add Medication",
+    "edit": "Edit Medication",
+    "name": "Medication Name",
+    "namePlaceholder": "e.g., Ibuprofen",
+    "cooldownMin": "Minimum Wait",
+    "cooldownMax": "Maximum Wait",
+    "notes": "Notes",
+    "notesPlaceholder": "e.g., Take with food",
+    "notifications": "Notifications",
+    "save": "Save",
+    "delete": "Delete Medication",
+    "deleteConfirm": "Are you sure you want to delete this medication? All dose history will also be removed.",
+    "fromPreset": "Choose from Presets",
+    "custom": "Custom Medication",
+    "hours": "hours",
+    "minutes": "minutes"
+  },
+  "dose": {
+    "logDose": "Log Dose",
+    "logConfirmTitle": "Log Dose Early?",
+    "logConfirmMessage": "It's been {{elapsed}} since your last dose. The recommended wait is {{min}}-{{max}}. Log anyway?",
+    "logConfirmOk": "Log Anyway",
+    "cancel": "Cancel",
+    "lastTaken": "Last dose: {{time}}",
+    "neverTaken": "No doses logged"
+  },
+  "status": {
+    "safe": "Safe to take",
+    "approaching": "Approaching safe",
+    "wait": "Wait {{time}}",
+    "approachingTime": "{{time}} remaining"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No doses logged yet",
+    "emptyHint": "Your dose history will appear here",
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "deleteConfirm": "Delete this dose log?",
+    "deleted": "Dose log deleted"
+  },
+  "settings": {
+    "title": "Settings",
+    "notifications": "Notifications",
+    "notificationsGlobal": "Enable Notifications",
+    "notificationsDescription": "Get notified when medications are safe to take again",
+    "data": "Data",
+    "clearHistory": "Clear All History",
+    "clearHistoryConfirm": "This will delete all dose logs. Your medications will be kept. Continue?",
+    "cleared": "History cleared",
+    "about": "About",
+    "version": "Version",
+    "developer": "Developer"
+  },
+  "presets": {
+    "title": "Preset Medications",
+    "ibuprofen": "Ibuprofen (Advil)",
+    "acetaminophen": "Acetaminophen (Tylenol)",
+    "aspirin": "Aspirin",
+    "naproxen": "Naproxen (Aleve)",
+    "diphenhydramine": "Diphenhydramine (Benadryl)",
+    "cetirizine": "Cetirizine (Zyrtec)",
+    "loratadine": "Loratadine (Claritin)",
+    "famotidine": "Famotidine (Pepcid)"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "done": "Done",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No"
+  }
+}
