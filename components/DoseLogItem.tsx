@@ -1,0 +1,96 @@
+import { Pressable, StyleSheet, Alert, useColorScheme } from "react-native";
+import { useTranslation } from "react-i18next";
+import { format, isToday, isYesterday } from "date-fns";
+import * as Haptics from "expo-haptics";
+import { ThemedText } from "@/components/Themed";
+import { colors } from "@/lib/constants";
+
+export interface DoseLogItemProps {
+  id: number;
+  medicationName: string;
+  takenAt: string; // ISO string
+  onDelete: (id: number) => void;
+}
+
+function formatTimestamp(isoString: string): string {
+  const date = new Date(isoString);
+  const timeStr = format(date, "h:mm a");
+  if (isToday(date)) {
+    return timeStr;
+  }
+  if (isYesterday(date)) {
+    return `Yesterday ${timeStr}`;
+  }
+  return format(date, "MMM d h:mm a");
+}
+
+export function DoseLogItem({
+  id,
+  medicationName,
+  takenAt,
+  onDelete,
+}: DoseLogItemProps) {
+  const { t } = useTranslation();
+  const isDark = useColorScheme() === "dark";
+
+  const handleLongPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(t("history.deleteConfirm"), undefined, [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: () => onDelete(id),
+      },
+    ]);
+  };
+
+  return (
+    <Pressable
+      onLongPress={handleLongPress}
+      style={({ pressed }) => [
+        styles.row,
+        {
+          backgroundColor: isDark ? colors.surfaceDark : colors.surface,
+          borderBottomColor: isDark ? colors.borderDark : colors.border,
+        },
+        pressed && styles.pressed,
+      ]}
+      accessibilityLabel={`${medicationName}, ${formatTimestamp(takenAt)}`}
+      accessibilityHint={t("history.deleteConfirm")}
+      accessibilityRole="button"
+    >
+      <ThemedText style={styles.name} numberOfLines={1}>
+        {medicationName}
+      </ThemedText>
+      <ThemedText variant="secondary" style={styles.time}>
+        {formatTimestamp(takenAt)}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    minHeight: 44,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+    marginRight: 12,
+  },
+  time: {
+    fontSize: 14,
+    flexShrink: 0,
+  },
+});
