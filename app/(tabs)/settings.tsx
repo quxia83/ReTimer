@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native";
 import { ThemedView, ThemedText } from "../../components/Themed";
 
-export default function MedicationsScreen() {
+export default function SettingsScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText variant="title">Medications</ThemedText>
+      <ThemedText variant="title">Settings</ThemedText>
     </ThemedView>
   );
 }
