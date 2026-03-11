@@ -27,7 +27,10 @@
     "fromPreset": "从预设中选择",
     "custom": "自定义药物",
     "hours": "小时",
-    "minutes": "分钟"
+    "minutes": "分钟",
+    "selectPreset": "双击选择此预设",
+    "togglePresets": "切换预设列表",
+    "notificationPermDenied": "通知权限被拒绝，请在设置中启用。"
   },
   "dose": {
     "logDose": "记录服药",
@@ -36,7 +39,9 @@
     "logConfirmOk": "仍然记录",
     "cancel": "取消",
     "lastTaken": "上次服药：{{time}}",
-    "neverTaken": "暂无服药记录"
+    "neverTaken": "暂无服药记录",
+    "tapToViewDetails": "双击查看详情",
+    "longPressToDelete": "长按删除"
   },
   "status": {
     "safe": "可以服用",

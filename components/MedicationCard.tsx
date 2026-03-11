@@ -94,14 +94,29 @@ export function MedicationCard({
     ? t("dose.lastTaken", { time: formatLastTaken(lastDoseAt) })
     : t("dose.neverTaken");
 
+  // Descriptive label for VoiceOver: e.g. "Ibuprofen: red, wait 2h 15m"
+  const trafficAccessibilityLabel =
+    status === "green"
+      ? `${medication.name}: ${t("status.safe")}`
+      : status === "red"
+        ? `${medication.name}: ${t("status.wait", { time: formatCountdown(remainingSeconds) })}`
+        : `${medication.name}: ${t("status.approachingTime", { time: formatCountdown(remainingSeconds) })}`;
+
   return (
     <Card
       onPress={() => onPress(medication.id)}
       style={[styles.card, { backgroundColor: bgColor }]}
+      accessibilityLabel={`${medication.name}, ${statusText}`}
+      accessibilityHint={t("dose.tapToViewDetails")}
     >
       <View style={styles.header}>
         <View style={styles.titleArea}>
-          <ThemedText style={styles.name}>{medication.name}</ThemedText>
+          <ThemedText
+            style={styles.name}
+            accessibilityRole="header"
+          >
+            {medication.name}
+          </ThemedText>
           {medication.notes ? (
             <ThemedText variant="secondary" style={styles.notes}>
               {medication.notes}
@@ -110,7 +125,9 @@ export function MedicationCard({
         </View>
         <View
           style={[styles.trafficLight, { backgroundColor: trafficColor }]}
-          accessibilityLabel={`${status} status`}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={trafficAccessibilityLabel}
         />
       </View>
 

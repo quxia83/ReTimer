@@ -27,7 +27,10 @@
     "fromPreset": "Choose from Presets",
     "custom": "Custom Medication",
     "hours": "hours",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "selectPreset": "Double-tap to select this preset",
+    "togglePresets": "Toggle preset list",
+    "notificationPermDenied": "Notification permission was denied. Please enable it in Settings."
   },
   "dose": {
     "logDose": "Log Dose",
@@ -36,7 +39,9 @@
     "logConfirmOk": "Log Anyway",
     "cancel": "Cancel",
     "lastTaken": "Last dose: {{time}}",
-    "neverTaken": "No doses logged"
+    "neverTaken": "No doses logged",
+    "tapToViewDetails": "Double-tap to view details",
+    "longPressToDelete": "Long press to delete"
   },
   "status": {
     "safe": "Safe to take",
