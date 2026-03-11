@@ -9,13 +9,15 @@ import {
 } from "react-native";
 import { useFocusEffect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { clearAllDoseLogs } from "@/db/queries/doseLogs";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { colors } from "@/lib/constants";
+import { db } from "@/db/client";
+import { settings } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
-const NOTIFICATIONS_KEY = "settings:notificationsGlobal";
+const NOTIFICATIONS_KEY = "notificationsGlobal";
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -26,9 +28,12 @@ export default function SettingsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(NOTIFICATIONS_KEY).then((value) => {
-        setNotificationsEnabled(value === "true");
-      });
+      db.select()
+        .from(settings)
+        .where(eq(settings.key, NOTIFICATIONS_KEY))
+        .then((rows) => {
+          setNotificationsEnabled(rows[0]?.value === "true");
+        });
     }, [])
   );
 
@@ -45,7 +50,13 @@ export default function SettingsScreen() {
       }
     }
     setNotificationsEnabled(value);
-    await AsyncStorage.setItem(NOTIFICATIONS_KEY, String(value));
+    await db
+      .insert(settings)
+      .values({ key: NOTIFICATIONS_KEY, value: String(value) })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: String(value) },
+      });
   };
 
   const handleClearHistory = () => {
