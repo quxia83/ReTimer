@@ -6,6 +6,7 @@ export const medications = sqliteTable("medications", {
   cooldownMin: integer("cooldown_min").notNull(), // minutes
   cooldownMax: integer("cooldown_max").notNull(), // minutes
   notes: text("notes"),
+  category: text("category").default("other"),
   notifyEnabled: integer("notify_enabled").notNull().default(1),
   isPreset: integer("is_preset").notNull().default(0),
   createdAt: text("created_at").notNull(),

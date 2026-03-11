@@ -1,31 +1,31 @@
 {
   "tabs": {
-    "medications": "药物",
+    "medications": "追踪器",
     "history": "历史",
     "settings": "设置"
   },
   "dashboard": {
-    "title": "药物",
-    "addMedication": "添加药物",
-    "empty": "还没有药物",
-    "emptyHint": "添加你的第一种药物，开始追踪服药记录",
-    "addFirst": "添加第一种药物"
+    "title": "追踪器",
+    "addMedication": "添加追踪器",
+    "empty": "还没有追踪器",
+    "emptyHint": "添加你的第一个追踪器，开始监控时间间隔",
+    "addFirst": "添加第一个追踪器"
   },
   "medication": {
-    "add": "添加药物",
-    "edit": "编辑药物",
-    "name": "药物名称",
-    "namePlaceholder": "例如：布洛芬",
-    "cooldownMin": "最短等待时间",
-    "cooldownMax": "最长等待时间",
+    "add": "添加追踪器",
+    "edit": "编辑追踪器",
+    "name": "名称",
+    "namePlaceholder": "例如：布洛芬、换机油",
+    "cooldownMin": "最短间隔",
+    "cooldownMax": "最长间隔",
     "notes": "备注",
-    "notesPlaceholder": "例如：饭后服用",
+    "notesPlaceholder": "例如：饭后服用、使用合成机油",
     "notifications": "通知",
     "save": "保存",
-    "delete": "删除药物",
-    "deleteConfirm": "确定要删除此药物吗？所有服药记录也将被删除。",
+    "delete": "删除追踪器",
+    "deleteConfirm": "确定要删除此追踪器吗？所有历史记录也将被删除。",
     "fromPreset": "从预设中选择",
-    "custom": "自定义药物",
+    "custom": "自定义追踪器",
     "hours": "小时",
     "minutes": "分钟",
     "selectPreset": "双击选择此预设",
@@ -33,47 +33,54 @@
     "notificationPermDenied": "通知权限被拒绝，请在设置中启用。"
   },
   "dose": {
-    "logDose": "记录服药",
-    "logConfirmTitle": "提前记录服药？",
-    "logConfirmMessage": "距离上次服药已过 {{elapsed}}。建议等待时间为 {{min}}-{{max}}。仍要记录吗？",
+    "logDose": "记录",
+    "logConfirmTitle": "提前记录？",
+    "logConfirmMessage": "距离上次记录已过 {{elapsed}}。建议间隔为 {{min}}-{{max}}。仍要记录吗？",
     "logConfirmOk": "仍然记录",
     "cancel": "取消",
-    "lastTaken": "上次服药：{{time}}",
-    "neverTaken": "暂无服药记录",
+    "lastTaken": "上次记录：{{time}}",
+    "neverTaken": "暂无记录",
     "tapToViewDetails": "双击查看详情",
     "longPressToDelete": "长按删除"
   },
   "status": {
-    "safe": "可以服用",
-    "approaching": "即将可以服用",
+    "safe": "可以执行",
+    "approaching": "即将可以执行",
     "wait": "还需等待 {{time}}",
     "approachingTime": "还剩 {{time}}"
   },
   "history": {
     "title": "历史",
-    "empty": "暂无服药记录",
-    "emptyHint": "你的服药历史将显示在这里",
+    "empty": "暂无记录",
+    "emptyHint": "你的历史记录将显示在这里",
     "all": "全部",
     "today": "今天",
     "yesterday": "昨天",
-    "deleteConfirm": "删除此服药记录？",
-    "deleted": "服药记录已删除"
+    "deleteConfirm": "删除此记录？",
+    "deleted": "记录已删除"
   },
   "settings": {
     "title": "设置",
     "notifications": "通知",
     "notificationsGlobal": "开启通知",
-    "notificationsDescription": "当药物可以再次服用时收到提醒",
+    "notificationsDescription": "当间隔时间结束时收到提醒",
     "data": "数据",
     "clearHistory": "清除所有历史",
-    "clearHistoryConfirm": "这将删除所有服药记录。你的药物信息将被保留。确定继续吗？",
+    "clearHistoryConfirm": "这将删除所有记录。你的追踪器将被保留。确定继续吗？",
     "cleared": "历史已清除",
     "about": "关于",
     "version": "版本",
     "developer": "开发者"
   },
+  "categories": {
+    "health": "健康与药物",
+    "vehicle": "车辆",
+    "home": "家居与电器",
+    "personal": "个人护理",
+    "other": "其他"
+  },
   "presets": {
-    "title": "预设药物",
+    "title": "预设追踪器",
     "ibuprofen": "布洛芬",
     "acetaminophen": "对乙酰氨基酚（泰诺）",
     "aspirin": "阿司匹林",
@@ -81,7 +88,15 @@
     "diphenhydramine": "苯海拉明",
     "cetirizine": "西替利嗪",
     "loratadine": "氯雷他定",
-    "famotidine": "法莫替丁"
+    "famotidine": "法莫替丁",
+    "oilChange": "换机油",
+    "tireRotation": "轮胎换位",
+    "airFilter": "空气滤芯（家用）",
+    "waterFilter": "净水滤芯",
+    "hvacService": "暖通维护",
+    "haircut": "理发",
+    "dentalCheckup": "牙科检查",
+    "eyeExam": "眼科检查"
   },
   "common": {
     "save": "保存",

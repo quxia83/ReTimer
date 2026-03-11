@@ -16,6 +16,7 @@ CREATE TABLE \`medications\` (
 \t\`cooldown_min\` integer NOT NULL,
 \t\`cooldown_max\` integer NOT NULL,
 \t\`notes\` text,
+\t\`category\` text DEFAULT 'other',
 \t\`notify_enabled\` integer DEFAULT 1 NOT NULL,
 \t\`is_preset\` integer DEFAULT 0 NOT NULL,
 \t\`created_at\` text NOT NULL,

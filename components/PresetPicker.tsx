@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, useColorScheme } from "react-native";
+import { FlatList, Pressable, StyleSheet, useColorScheme, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/Themed";
 import { colors } from "@/lib/constants";
@@ -8,6 +8,7 @@ export interface Preset {
   cooldownMin: number;
   cooldownMax: number;
   notes: string;
+  category: string;
 }
 
 interface PresetPickerProps {
@@ -15,39 +16,121 @@ interface PresetPickerProps {
 }
 
 const PRESETS: Preset[] = [
-  { name: "Ibuprofen (Advil)", cooldownMin: 240, cooldownMax: 360, notes: "Take with food" },
-  { name: "Acetaminophen (Tylenol)", cooldownMin: 240, cooldownMax: 360, notes: "Max 4g/day" },
-  { name: "Aspirin", cooldownMin: 240, cooldownMax: 360, notes: "Take with food" },
-  { name: "Naproxen (Aleve)", cooldownMin: 480, cooldownMax: 720, notes: "Take with food" },
-  { name: "Diphenhydramine (Benadryl)", cooldownMin: 240, cooldownMax: 360, notes: "May cause drowsiness" },
-  { name: "Cetirizine (Zyrtec)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily" },
-  { name: "Loratadine (Claritin)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily" },
-  { name: "Famotidine (Pepcid)", cooldownMin: 720, cooldownMax: 720, notes: "" },
+  // Health
+  { name: "Ibuprofen (Advil)", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
+  { name: "Acetaminophen (Tylenol)", cooldownMin: 240, cooldownMax: 360, notes: "Max 4g/day", category: "health" },
+  { name: "Aspirin", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
+  { name: "Naproxen (Aleve)", cooldownMin: 480, cooldownMax: 720, notes: "Take with food", category: "health" },
+  { name: "Diphenhydramine (Benadryl)", cooldownMin: 240, cooldownMax: 360, notes: "May cause drowsiness", category: "health" },
+  { name: "Cetirizine (Zyrtec)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily", category: "health" },
+  { name: "Loratadine (Claritin)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily", category: "health" },
+  { name: "Famotidine (Pepcid)", cooldownMin: 720, cooldownMax: 720, notes: "", category: "health" },
+  { name: "Dental Checkup", cooldownMin: 259200, cooldownMax: 525600, notes: "", category: "health" },
+  { name: "Eye Exam", cooldownMin: 525600, cooldownMax: 1051200, notes: "", category: "health" },
+  // Vehicle
+  { name: "Oil Change", cooldownMin: 129600, cooldownMax: 259200, notes: "Check oil level monthly", category: "vehicle" },
+  { name: "Tire Rotation", cooldownMin: 259200, cooldownMax: 388800, notes: "Every 5,000-7,500 miles", category: "vehicle" },
+  // Home
+  { name: "Air Filter (Home)", cooldownMin: 129600, cooldownMax: 259200, notes: "Check monthly", category: "home" },
+  { name: "Water Filter", cooldownMin: 259200, cooldownMax: 388800, notes: "Replace cartridge", category: "home" },
+  { name: "HVAC Service", cooldownMin: 259200, cooldownMax: 525600, notes: "Annual recommended", category: "home" },
+  // Personal
+  { name: "Haircut", cooldownMin: 20160, cooldownMax: 60480, notes: "", category: "personal" },
 ];
 
 function formatCooldown(min: number, max: number): string {
-  const fmtHours = (m: number) => {
-    const h = Math.floor(m / 60);
+  const fmtDuration = (m: number) => {
+    const days = Math.floor(m / 1440);
+    const hours = Math.floor((m % 1440) / 60);
     const rem = m % 60;
-    if (h > 0 && rem > 0) return `${h}h ${rem}m`;
-    if (h > 0) return `${h}h`;
+    if (days > 0 && hours > 0) return `${days}d ${hours}h`;
+    if (days > 0) return `${days}d`;
+    if (hours > 0 && rem > 0) return `${hours}h ${rem}m`;
+    if (hours > 0) return `${hours}h`;
     return `${rem}m`;
   };
-  if (min === max) return fmtHours(min);
-  return `${fmtHours(min)}-${fmtHours(max)}`;
+  if (min === max) return fmtDuration(min);
+  return `${fmtDuration(min)}-${fmtDuration(max)}`;
+}
+
+const CATEGORY_ORDER = ["health", "vehicle", "home", "personal"];
+
+type CategoryKey = "health" | "vehicle" | "home" | "personal";
+
+const CATEGORY_I18N: Record<CategoryKey, string> = {
+  health: "categories.health",
+  vehicle: "categories.vehicle",
+  home: "categories.home",
+  personal: "categories.personal",
+};
+
+interface ListItem {
+  type: "custom" | "header" | "preset";
+  preset?: Preset;
+  categoryKey?: string;
 }
 
 export function PresetPicker({ onSelect }: PresetPickerProps) {
   const { t } = useTranslation();
   const isDark = useColorScheme() === "dark";
 
-  const customPreset: Preset = { name: "", cooldownMin: 0, cooldownMax: 0, notes: "" };
+  const customPreset: Preset = { name: "", cooldownMin: 0, cooldownMax: 0, notes: "", category: "other" };
 
-  const renderItem = ({ item, index }: { item: Preset; index: number }) => {
-    const isCustom = index === 0;
+  // Build flat list with category headers
+  const listData: ListItem[] = [{ type: "custom" }];
+  for (const cat of CATEGORY_ORDER) {
+    const catPresets = PRESETS.filter((p) => p.category === cat);
+    if (catPresets.length === 0) continue;
+    listData.push({ type: "header", categoryKey: cat });
+    for (const p of catPresets) {
+      listData.push({ type: "preset", preset: p });
+    }
+  }
+
+  const renderItem = ({ item }: { item: ListItem }) => {
+    if (item.type === "custom") {
+      return (
+        <Pressable
+          onPress={() => onSelect(customPreset)}
+          style={({ pressed }) => [
+            styles.row,
+            {
+              backgroundColor: isDark ? colors.surfaceDark : colors.surface,
+              borderBottomColor: isDark ? colors.borderDark : colors.border,
+            },
+            pressed && styles.rowPressed,
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t("medication.custom")}
+        >
+          <ThemedText style={styles.name}>
+            {t("medication.custom")}
+          </ThemedText>
+        </Pressable>
+      );
+    }
+
+    if (item.type === "header") {
+      return (
+        <View
+          style={[
+            styles.categoryHeader,
+            {
+              backgroundColor: isDark ? colors.backgroundDark : colors.background,
+            },
+          ]}
+        >
+          <ThemedText variant="secondary" style={styles.categoryHeaderText}>
+            {t(CATEGORY_I18N[item.categoryKey as CategoryKey])}
+          </ThemedText>
+        </View>
+      );
+    }
+
+    const preset = item.preset!;
     return (
       <Pressable
-        onPress={() => onSelect(item)}
+        onPress={() => onSelect(preset)}
         style={({ pressed }) => [
           styles.row,
           {
@@ -57,30 +140,24 @@ export function PresetPicker({ onSelect }: PresetPickerProps) {
           pressed && styles.rowPressed,
         ]}
         accessibilityRole="button"
-        accessibilityLabel={isCustom ? t("medication.custom") : item.name}
+        accessibilityLabel={preset.name}
       >
-        <ThemedText style={styles.name}>
-          {isCustom ? t("medication.custom") : item.name}
+        <ThemedText style={styles.name}>{preset.name}</ThemedText>
+        <ThemedText variant="secondary" style={styles.cooldown}>
+          {formatCooldown(preset.cooldownMin, preset.cooldownMax)}
         </ThemedText>
-        {!isCustom && (
-          <>
-            <ThemedText variant="secondary" style={styles.cooldown}>
-              {formatCooldown(item.cooldownMin, item.cooldownMax)}
-            </ThemedText>
-            {item.notes ? (
-              <ThemedText variant="secondary" style={styles.notes}>
-                {item.notes}
-              </ThemedText>
-            ) : null}
-          </>
-        )}
+        {preset.notes ? (
+          <ThemedText variant="secondary" style={styles.notes}>
+            {preset.notes}
+          </ThemedText>
+        ) : null}
       </Pressable>
     );
   };
 
   return (
     <FlatList
-      data={[customPreset, ...PRESETS]}
+      data={listData}
       keyExtractor={(_, index) => String(index)}
       renderItem={renderItem}
       scrollEnabled={false}
@@ -109,5 +186,16 @@ const styles = StyleSheet.create({
   notes: {
     marginTop: 2,
     fontSize: 13,
+  },
+  categoryHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 6,
+  },
+  categoryHeaderText: {
+    fontSize: 13,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 });

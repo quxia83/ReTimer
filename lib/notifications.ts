@@ -27,7 +27,7 @@ export async function scheduleCooldownNotification(
   await Notifications.scheduleNotificationAsync({
     content: {
       title: medicationName,
-      body: `${medicationName} is safe to take again.`,
+      body: `${medicationName} interval is complete.`,
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,

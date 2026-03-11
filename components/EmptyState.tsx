@@ -15,7 +15,7 @@ export function EmptyState({ onAddFirst }: EmptyStateProps) {
   return (
     <View style={styles.container}>
       <FontAwesome
-        name="medkit"
+        name="repeat"
         size={64}
         color={colors.textSecondary}
         style={styles.icon}

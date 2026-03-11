@@ -1,31 +1,31 @@
 {
   "tabs": {
-    "medications": "Medications",
+    "medications": "Trackers",
     "history": "History",
     "settings": "Settings"
   },
   "dashboard": {
-    "title": "Medications",
-    "addMedication": "Add Medication",
-    "empty": "No medications yet",
-    "emptyHint": "Add your first medication to start tracking doses",
-    "addFirst": "Add Your First Medication"
+    "title": "Trackers",
+    "addMedication": "Add Tracker",
+    "empty": "No trackers yet",
+    "emptyHint": "Add your first tracker to start monitoring intervals",
+    "addFirst": "Add Your First Tracker"
   },
   "medication": {
-    "add": "Add Medication",
-    "edit": "Edit Medication",
-    "name": "Medication Name",
-    "namePlaceholder": "e.g., Ibuprofen",
-    "cooldownMin": "Minimum Wait",
-    "cooldownMax": "Maximum Wait",
+    "add": "Add Tracker",
+    "edit": "Edit Tracker",
+    "name": "Name",
+    "namePlaceholder": "e.g., Ibuprofen, Oil Change",
+    "cooldownMin": "Minimum Interval",
+    "cooldownMax": "Maximum Interval",
     "notes": "Notes",
-    "notesPlaceholder": "e.g., Take with food",
+    "notesPlaceholder": "e.g., Take with food, Use synthetic oil",
     "notifications": "Notifications",
     "save": "Save",
-    "delete": "Delete Medication",
-    "deleteConfirm": "Are you sure you want to delete this medication? All dose history will also be removed.",
+    "delete": "Delete Tracker",
+    "deleteConfirm": "Are you sure you want to delete this tracker? All history will also be removed.",
     "fromPreset": "Choose from Presets",
-    "custom": "Custom Medication",
+    "custom": "Custom Tracker",
     "hours": "hours",
     "minutes": "minutes",
     "selectPreset": "Double-tap to select this preset",
@@ -33,13 +33,13 @@
     "notificationPermDenied": "Notification permission was denied. Please enable it in Settings."
   },
   "dose": {
-    "logDose": "Log Dose",
-    "logConfirmTitle": "Log Dose Early?",
-    "logConfirmMessage": "It's been {{elapsed}} since your last dose. The recommended wait is {{min}}-{{max}}. Log anyway?",
+    "logDose": "Log Entry",
+    "logConfirmTitle": "Log Early?",
+    "logConfirmMessage": "It's been {{elapsed}} since your last entry. The recommended interval is {{min}}-{{max}}. Log anyway?",
     "logConfirmOk": "Log Anyway",
     "cancel": "Cancel",
-    "lastTaken": "Last dose: {{time}}",
-    "neverTaken": "No doses logged",
+    "lastTaken": "Last logged: {{time}}",
+    "neverTaken": "No entries logged",
     "tapToViewDetails": "Double-tap to view details",
     "longPressToDelete": "Long press to delete"
   },
@@ -51,29 +51,36 @@
   },
   "history": {
     "title": "History",
-    "empty": "No doses logged yet",
-    "emptyHint": "Your dose history will appear here",
+    "empty": "No entries logged yet",
+    "emptyHint": "Your history will appear here",
     "all": "All",
     "today": "Today",
     "yesterday": "Yesterday",
-    "deleteConfirm": "Delete this dose log?",
-    "deleted": "Dose log deleted"
+    "deleteConfirm": "Delete this log entry?",
+    "deleted": "Log entry deleted"
   },
   "settings": {
     "title": "Settings",
     "notifications": "Notifications",
     "notificationsGlobal": "Enable Notifications",
-    "notificationsDescription": "Get notified when medications are safe to take again",
+    "notificationsDescription": "Get notified when intervals are complete",
     "data": "Data",
     "clearHistory": "Clear All History",
-    "clearHistoryConfirm": "This will delete all dose logs. Your medications will be kept. Continue?",
+    "clearHistoryConfirm": "This will delete all log entries. Your trackers will be kept. Continue?",
     "cleared": "History cleared",
     "about": "About",
     "version": "Version",
     "developer": "Developer"
   },
+  "categories": {
+    "health": "Health & Medication",
+    "vehicle": "Vehicle",
+    "home": "Home & Appliance",
+    "personal": "Personal Care",
+    "other": "Other"
+  },
   "presets": {
-    "title": "Preset Medications",
+    "title": "Preset Trackers",
     "ibuprofen": "Ibuprofen (Advil)",
     "acetaminophen": "Acetaminophen (Tylenol)",
     "aspirin": "Aspirin",
@@ -81,7 +88,15 @@
     "diphenhydramine": "Diphenhydramine (Benadryl)",
     "cetirizine": "Cetirizine (Zyrtec)",
     "loratadine": "Loratadine (Claritin)",
-    "famotidine": "Famotidine (Pepcid)"
+    "famotidine": "Famotidine (Pepcid)",
+    "oilChange": "Oil Change",
+    "tireRotation": "Tire Rotation",
+    "airFilter": "Air Filter (Home)",
+    "waterFilter": "Water Filter",
+    "hvacService": "HVAC Service",
+    "haircut": "Haircut",
+    "dentalCheckup": "Dental Checkup",
+    "eyeExam": "Eye Exam"
   },
   "common": {
     "save": "Save",

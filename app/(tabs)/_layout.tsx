@@ -35,7 +35,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t("tabs.medications"),
-          tabBarIcon: ({ color }) => <TabBarIcon name="medkit" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="repeat" color={color} />,
         }}
       />
       <Tabs.Screen
