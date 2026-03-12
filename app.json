@@ -15,7 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.retimer.app",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -54,7 +54,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "33f38ffc-0ac4-4102-991d-b36deb2b65ba"
+        "projectId": "82d1a445-d8d2-47f5-8647-d5494c867f09"
       }
     }
   }
