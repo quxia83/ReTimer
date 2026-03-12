@@ -16,6 +16,7 @@ export async function insertMedication(data: {
   cooldownMin: number;
   cooldownMax: number;
   notes?: string;
+  category?: string;
   notifyEnabled?: number;
   isPreset?: number;
 }) {

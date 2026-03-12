@@ -29,6 +29,7 @@ export default function AddMedicationScreen() {
   const [cooldownMin, setCooldownMin] = useState(0);
   const [cooldownMax, setCooldownMax] = useState(0);
   const [notes, setNotes] = useState("");
+  const [category, setCategory] = useState("other");
   const [notifications, setNotifications] = useState(true);
   const [showPresets, setShowPresets] = useState(false);
   const [presetKey, setPresetKey] = useState(0);
@@ -45,9 +46,10 @@ export default function AddMedicationScreen() {
   const handlePresetSelect = useCallback((preset: Preset) => {
     setName(preset.name);
     setNotes(preset.notes);
+    setCategory(preset.category);
     setCooldownMin(preset.cooldownMin);
     setCooldownMax(preset.cooldownMax);
-    setPresetKey((k) => k + 1); // Force DurationInput to re-derive unit
+    setPresetKey((k) => k + 1);
     setShowPresets(false);
   }, []);
 
@@ -68,11 +70,12 @@ export default function AddMedicationScreen() {
       cooldownMin,
       cooldownMax: cooldownMax > 0 ? cooldownMax : cooldownMin,
       notes: notes.trim() || undefined,
+      category,
       notifyEnabled: notifications ? 1 : 0,
     });
 
     router.back();
-  }, [name, cooldownMin, cooldownMax, notes, notifications, router, t]);
+  }, [name, cooldownMin, cooldownMax, notes, category, notifications, router, t]);
 
   return (
     <ThemedView style={styles.container}>

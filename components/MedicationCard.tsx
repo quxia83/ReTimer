@@ -16,6 +16,7 @@ interface MedicationCardProps {
     cooldownMax: number;
     notes: string | null;
     notifyEnabled: number;
+    category: string | null;
   };
   lastDoseAt: string | null;
   onLogDose: (medicationId: number) => void;
@@ -112,6 +113,11 @@ export function MedicationCard({
           >
             {medication.name}
           </ThemedText>
+          {medication.category && medication.category !== "other" ? (
+            <ThemedText variant="secondary" style={styles.category}>
+              {t(`categories.${medication.category}`)}
+            </ThemedText>
+          ) : null}
           {medication.notes ? (
             <ThemedText variant="secondary" style={styles.notes}>
               {medication.notes}
@@ -161,6 +167,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     letterSpacing: 0.2,
+  },
+  category: {
+    marginTop: 2,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   notes: {
     marginTop: 2,

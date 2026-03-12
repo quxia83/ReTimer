@@ -1,15 +1,17 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
+  ScrollView,
   StyleSheet,
   Pressable,
   Alert,
+  View,
   useColorScheme,
 } from "react-native";
 import { useRouter, useFocusEffect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { ThemedView } from "@/components/Themed";
+import { ThemedView, ThemedText } from "@/components/Themed";
 import { MedicationCard } from "@/components/MedicationCard";
 import { EmptyState } from "@/components/EmptyState";
 import { getAllMedications } from "@/db/queries/medications";
@@ -25,6 +27,7 @@ interface MedicationRow {
   cooldownMax: number;
   notes: string | null;
   notifyEnabled: number;
+  category: string | null;
 }
 
 interface DashboardItem {
@@ -32,12 +35,21 @@ interface DashboardItem {
   lastDoseAt: string | null;
 }
 
+const CATEGORY_I18N: Record<string, string> = {
+  health: "categories.health",
+  vehicle: "categories.vehicle",
+  home: "categories.home",
+  personal: "categories.personal",
+  other: "categories.other",
+};
+
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const isDark = useColorScheme() === "dark";
   const [items, setItems] = useState<DashboardItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const meds = await getAllMedications();
@@ -52,6 +64,7 @@ export default function DashboardScreen() {
             cooldownMax: med.cooldownMax,
             notes: med.notes ?? null,
             notifyEnabled: med.notifyEnabled ?? 1,
+            category: med.category ?? null,
           },
           lastDoseAt: lastDose?.takenAt ?? null,
         };
@@ -59,6 +72,20 @@ export default function DashboardScreen() {
     );
     setItems(results);
   }, []);
+
+  // Derive unique categories from data
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    for (const item of items) {
+      if (item.medication.category) cats.add(item.medication.category);
+    }
+    return Array.from(cats);
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    if (!selectedCategory) return items;
+    return items.filter((i) => i.medication.category === selectedCategory);
+  }, [items, selectedCategory]);
 
   useFocusEffect(
     useCallback(() => {
@@ -166,22 +193,96 @@ export default function DashboardScreen() {
       {items.length === 0 ? (
         <EmptyState onAddFirst={navigateToAdd} />
       ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => String(item.medication.id)}
-          renderItem={({ item }) => (
-            <MedicationCard
-              medication={item.medication}
-              lastDoseAt={item.lastDoseAt}
-              onLogDose={handleLogDose}
-              onPress={handleCardPress}
-            />
+        <>
+          {categories.length > 1 && (
+            <View
+              style={[
+                styles.filterBar,
+                { borderBottomColor: isDark ? colors.borderDark : colors.border },
+              ]}
+            >
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filterContent}
+              >
+                <Pressable
+                  onPress={() => setSelectedCategory(null)}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: selectedCategory === null
+                        ? colors.accent
+                        : isDark ? colors.surfaceDark : colors.surface,
+                      borderColor: selectedCategory === null
+                        ? colors.accent
+                        : isDark ? colors.borderDark : colors.border,
+                    },
+                  ]}
+                  accessibilityLabel={t("history.all")}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedCategory === null }}
+                >
+                  <ThemedText
+                    style={[
+                      styles.chipText,
+                      selectedCategory === null && styles.chipTextSelected,
+                    ]}
+                  >
+                    {t("history.all")}
+                  </ThemedText>
+                </Pressable>
+                {categories.map((cat) => (
+                  <Pressable
+                    key={cat}
+                    onPress={() =>
+                      setSelectedCategory(selectedCategory === cat ? null : cat)
+                    }
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: selectedCategory === cat
+                          ? colors.accent
+                          : isDark ? colors.surfaceDark : colors.surface,
+                        borderColor: selectedCategory === cat
+                          ? colors.accent
+                          : isDark ? colors.borderDark : colors.border,
+                      },
+                    ]}
+                    accessibilityLabel={t(CATEGORY_I18N[cat] ?? cat)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: selectedCategory === cat }}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.chipText,
+                        selectedCategory === cat && styles.chipTextSelected,
+                      ]}
+                    >
+                      {t(CATEGORY_I18N[cat] ?? cat)}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
           )}
-          contentContainerStyle={styles.list}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          showsVerticalScrollIndicator={false}
-        />
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => String(item.medication.id)}
+            renderItem={({ item }) => (
+              <MedicationCard
+                medication={item.medication}
+                lastDoseAt={item.lastDoseAt}
+                onLogDose={handleLogDose}
+                onPress={handleCardPress}
+              />
+            )}
+            contentContainerStyle={styles.list}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            showsVerticalScrollIndicator={false}
+          />
+        </>
       )}
     </ThemedView>
   );
@@ -203,6 +304,30 @@ function getCooldownStatus(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  filterBar: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  filterContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  chipTextSelected: {
+    color: "#ffffff",
+    fontWeight: "600",
   },
   list: {
     padding: 16,
