@@ -32,7 +32,7 @@ export async function insertMedication(data: {
 
 export async function updateMedication(
   id: number,
-  data: Partial<{ name: string; cooldownMin: number; cooldownMax: number; notes: string; notifyEnabled: number }>
+  data: Partial<{ name: string; cooldownMin: number; cooldownMax: number; notes: string; category: string; notifyEnabled: number }>
 ) {
   return db
     .update(medications)

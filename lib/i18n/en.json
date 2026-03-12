@@ -30,6 +30,9 @@
     "minExceedsMax": "Minimum interval cannot exceed maximum interval.",
     "hours": "hours",
     "minutes": "minutes",
+    "category": "Category",
+    "selectCategory": "Select Category",
+    "tapToChangeCategory": "Tap to change category",
     "selectPreset": "Double-tap to select this preset",
     "togglePresets": "Toggle preset list",
     "notificationPermDenied": "Notification permission was denied. Please enable it in Settings."

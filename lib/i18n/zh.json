@@ -30,6 +30,9 @@
     "minExceedsMax": "最短间隔不能超过最长间隔。",
     "hours": "小时",
     "minutes": "分钟",
+    "category": "分类",
+    "selectCategory": "选择分类",
+    "tapToChangeCategory": "点击更改分类",
     "selectPreset": "双击选择此预设",
     "togglePresets": "切换预设列表",
     "notificationPermDenied": "通知权限被拒绝，请在设置中启用。"

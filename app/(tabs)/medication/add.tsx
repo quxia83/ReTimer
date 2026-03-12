@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { Button } from "@/components/ui/Button";
 import { DurationInput } from "@/components/DurationInput";
+import { CategoryPicker } from "@/components/CategoryPicker";
 import { PresetPicker, Preset } from "@/components/PresetPicker";
 import { insertMedication } from "@/db/queries/medications";
 import { colors } from "@/lib/constants";
@@ -124,6 +125,14 @@ export default function AddMedicationScreen() {
             placeholderTextColor={colors.textSecondary}
             accessibilityLabel={t("medication.name")}
             autoCapitalize="words"
+          />
+
+          {/* Category */}
+          <ThemedText style={styles.label}>{t("medication.category")}</ThemedText>
+          <CategoryPicker
+            value={category}
+            onChange={setCategory}
+            accessibilityLabelPrefix={t("medication.category")}
           />
 
           {/* Cooldown Min */}

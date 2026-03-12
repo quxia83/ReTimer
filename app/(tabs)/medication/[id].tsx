@@ -19,6 +19,7 @@ import { ThemedView, ThemedText } from "@/components/Themed";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DurationInput } from "@/components/DurationInput";
+import { CategoryPicker } from "@/components/CategoryPicker";
 import {
   getMedication,
   updateMedication,
@@ -34,6 +35,7 @@ interface MedicationData {
   cooldownMin: number;
   cooldownMax: number;
   notes: string | null;
+  category: string | null;
   notifyEnabled: number | null;
 }
 
@@ -69,6 +71,7 @@ export default function MedicationDetailScreen() {
   const [editCooldownMin, setEditCooldownMin] = useState(0);
   const [editCooldownMax, setEditCooldownMax] = useState(0);
   const [editNotes, setEditNotes] = useState("");
+  const [editCategory, setEditCategory] = useState("other");
   const [editNotifications, setEditNotifications] = useState(true);
   const [editKey, setEditKey] = useState(0);
 
@@ -96,6 +99,7 @@ export default function MedicationDetailScreen() {
     setEditNotes(medication.notes ?? "");
     setEditCooldownMin(medication.cooldownMin);
     setEditCooldownMax(medication.cooldownMax);
+    setEditCategory(medication.category ?? "other");
     setEditNotifications((medication.notifyEnabled ?? 1) === 1);
     setEditKey((k) => k + 1);
     setEditing(true);
@@ -118,12 +122,13 @@ export default function MedicationDetailScreen() {
       cooldownMin: editCooldownMin,
       cooldownMax: editCooldownMax > 0 ? editCooldownMax : editCooldownMin,
       notes: editNotes.trim(),
+      category: editCategory,
       notifyEnabled: editNotifications ? 1 : 0,
     });
 
     setEditing(false);
     await loadData();
-  }, [editName, editCooldownMin, editCooldownMax, editNotes, editNotifications, medId, loadData, t]);
+  }, [editName, editCooldownMin, editCooldownMax, editNotes, editCategory, editNotifications, medId, loadData, t]);
 
   const handleDelete = useCallback(() => {
     Alert.alert(t("medication.delete"), t("medication.deleteConfirm"), [
@@ -218,6 +223,13 @@ export default function MedicationDetailScreen() {
                 autoCapitalize="words"
               />
 
+              <ThemedText style={styles.label}>{t("medication.category")}</ThemedText>
+              <CategoryPicker
+                value={editCategory}
+                onChange={setEditCategory}
+                accessibilityLabelPrefix={t("medication.category")}
+              />
+
               <ThemedText style={styles.label}>{t("medication.cooldownMin")}</ThemedText>
               <DurationInput
                 key={`min-${editKey}`}
@@ -279,6 +291,13 @@ export default function MedicationDetailScreen() {
               <Card style={styles.infoCard}>
                 <ThemedText style={styles.infoLabel}>{t("medication.name")}</ThemedText>
                 <ThemedText style={styles.infoValue}>{medication.name}</ThemedText>
+
+                <ThemedText style={[styles.infoLabel, styles.infoLabelSpaced]}>
+                  {t("medication.category")}
+                </ThemedText>
+                <ThemedText style={styles.infoValue}>
+                  {t(`categories.${medication.category ?? "other"}`)}
+                </ThemedText>
 
                 <ThemedText style={[styles.infoLabel, styles.infoLabelSpaced]}>
                   {t("medication.cooldownMin")} / {t("medication.cooldownMax")}
