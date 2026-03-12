@@ -2,18 +2,20 @@ import {
   View,
   Pressable,
   StyleSheet,
+  StyleProp,
   ViewStyle,
+  ViewProps,
   useColorScheme,
 } from "react-native";
 import { colors } from "@/lib/constants";
 
-interface CardProps {
+interface CardProps extends Pick<ViewProps, "accessibilityLabel" | "accessibilityHint"> {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
 }
 
-export function Card({ children, style, onPress }: CardProps) {
+export function Card({ children, style, onPress, accessibilityLabel, accessibilityHint }: CardProps) {
   const isDark = useColorScheme() === "dark";
 
   const cardStyle: ViewStyle = {
@@ -33,6 +35,8 @@ export function Card({ children, style, onPress }: CardProps) {
           style,
         ]}
         accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
       >
         {children}
       </Pressable>
@@ -40,7 +44,11 @@ export function Card({ children, style, onPress }: CardProps) {
   }
 
   return (
-    <View style={[styles.card, cardStyle, !isDark && styles.shadow, style]}>
+    <View
+      style={[styles.card, cardStyle, !isDark && styles.shadow, style]}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+    >
       {children}
     </View>
   );

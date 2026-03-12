@@ -10,7 +10,7 @@ import {
 import { useFocusEffect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ThemedView, ThemedText } from "@/components/Themed";
-import { clearAllDoseLogs } from "@/db/queries/doseLogs";
+import { clearAllEntryLogs } from "@/db/queries/entries";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { colors } from "@/lib/constants";
 import { db } from "@/db/client";
@@ -69,7 +69,7 @@ export default function SettingsScreen() {
           text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
-            await clearAllDoseLogs();
+            await clearAllEntryLogs();
             Alert.alert(t("settings.cleared"));
           },
         },

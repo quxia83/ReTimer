@@ -5,10 +5,10 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/Themed";
 import { colors } from "@/lib/constants";
 
-export interface DoseLogItemProps {
+export interface EntryLogItemProps {
   id: number;
-  medicationName: string;
-  takenAt: string; // ISO string
+  trackerName: string;
+  loggedAt: string; // ISO string
   onDelete: (id: number) => void;
 }
 
@@ -24,12 +24,12 @@ function formatTimestamp(isoString: string): string {
   return format(date, "MMM d h:mm a");
 }
 
-export function DoseLogItem({
+export function EntryLogItem({
   id,
-  medicationName,
-  takenAt,
+  trackerName,
+  loggedAt,
   onDelete,
-}: DoseLogItemProps) {
+}: EntryLogItemProps) {
   const { t } = useTranslation();
   const isDark = useColorScheme() === "dark";
 
@@ -56,15 +56,15 @@ export function DoseLogItem({
         },
         pressed && styles.pressed,
       ]}
-      accessibilityLabel={`${medicationName}, ${formatTimestamp(takenAt)}`}
+      accessibilityLabel={`${trackerName}, ${formatTimestamp(loggedAt)}`}
       accessibilityHint={t("history.deleteConfirm")}
       accessibilityRole="button"
     >
       <ThemedText style={styles.name} numberOfLines={1}>
-        {medicationName}
+        {trackerName}
       </ThemedText>
       <ThemedText variant="secondary" style={styles.time}>
-        {formatTimestamp(takenAt)}
+        {formatTimestamp(loggedAt)}
       </ThemedText>
     </Pressable>
   );

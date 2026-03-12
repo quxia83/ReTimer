@@ -1,12 +1,12 @@
-CREATE TABLE `dose_logs` (
+CREATE TABLE `entry_logs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`medication_id` integer NOT NULL,
-	`taken_at` text NOT NULL,
+	`tracker_id` integer NOT NULL,
+	`logged_at` text NOT NULL,
 	`created_at` text NOT NULL,
-	FOREIGN KEY (`medication_id`) REFERENCES `medications`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`tracker_id`) REFERENCES `trackers`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `medications` (
+CREATE TABLE `trackers` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
 	`cooldown_min` integer NOT NULL,

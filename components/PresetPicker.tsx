@@ -87,10 +87,10 @@ export function PresetPicker({ onSelect }: PresetPickerProps) {
             pressed && styles.rowPressed,
           ]}
           accessibilityRole="button"
-          accessibilityLabel={t("medication.custom")}
+          accessibilityLabel={t("tracker.custom")}
         >
           <ThemedText style={styles.name}>
-            {t("medication.custom")}
+            {t("tracker.custom")}
           </ThemedText>
         </Pressable>
       );

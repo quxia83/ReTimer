@@ -1,5 +1,5 @@
 import { db } from "./client";
-import { medications } from "./schema";
+import { trackers } from "./schema";
 
 const PRESETS = [
   { name: "Ibuprofen (Advil)", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
@@ -21,12 +21,12 @@ const PRESETS = [
 ];
 
 export async function seedPresets() {
-  const existing = await db.select().from(medications);
+  const existing = await db.select().from(trackers);
   if (existing.length > 0) return;
 
   const now = new Date().toISOString();
   for (const p of PRESETS) {
-    await db.insert(medications).values({
+    await db.insert(trackers).values({
       ...p,
       notifyEnabled: 1,
       isPreset: 1,

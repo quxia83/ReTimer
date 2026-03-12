@@ -1,17 +1,17 @@
 import { db } from "../client";
-import { medications } from "../schema";
+import { trackers } from "../schema";
 import { eq } from "drizzle-orm";
 
-export async function getAllMedications() {
-  return db.select().from(medications);
+export async function getAllTrackers() {
+  return db.select().from(trackers);
 }
 
-export async function getMedication(id: number) {
-  const rows = await db.select().from(medications).where(eq(medications.id, id));
+export async function getTracker(id: number) {
+  const rows = await db.select().from(trackers).where(eq(trackers.id, id));
   return rows[0] ?? null;
 }
 
-export async function insertMedication(data: {
+export async function insertTracker(data: {
   name: string;
   cooldownMin: number;
   cooldownMax: number;
@@ -21,7 +21,7 @@ export async function insertMedication(data: {
   isPreset?: number;
 }) {
   const now = new Date().toISOString();
-  return db.insert(medications).values({
+  return db.insert(trackers).values({
     ...data,
     notifyEnabled: data.notifyEnabled ?? 1,
     isPreset: data.isPreset ?? 0,
@@ -30,16 +30,16 @@ export async function insertMedication(data: {
   });
 }
 
-export async function updateMedication(
+export async function updateTracker(
   id: number,
   data: Partial<{ name: string; cooldownMin: number; cooldownMax: number; notes: string; category: string; notifyEnabled: number }>
 ) {
   return db
-    .update(medications)
+    .update(trackers)
     .set({ ...data, updatedAt: new Date().toISOString() })
-    .where(eq(medications.id, id));
+    .where(eq(trackers.id, id));
 }
 
-export async function deleteMedication(id: number) {
-  return db.delete(medications).where(eq(medications.id, id));
+export async function deleteTracker(id: number) {
+  return db.delete(trackers).where(eq(trackers.id, id));
 }

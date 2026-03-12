@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-export const medications = sqliteTable("medications", {
+export const trackers = sqliteTable("trackers", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   cooldownMin: integer("cooldown_min").notNull(), // minutes
@@ -13,12 +13,12 @@ export const medications = sqliteTable("medications", {
   updatedAt: text("updated_at").notNull(),
 });
 
-export const doseLogs = sqliteTable("dose_logs", {
+export const entryLogs = sqliteTable("entry_logs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  medicationId: integer("medication_id")
+  trackerId: integer("tracker_id")
     .notNull()
-    .references(() => medications.id, { onDelete: "cascade" }),
-  takenAt: text("taken_at").notNull(),
+    .references(() => trackers.id, { onDelete: "cascade" }),
+  loggedAt: text("logged_at").notNull(),
   createdAt: text("created_at").notNull(),
 });
 

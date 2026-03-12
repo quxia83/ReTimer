@@ -36,37 +36,63 @@ export function CategoryPicker({
   const { t } = useTranslation();
   const isDark = useColorScheme() === "dark";
 
-  const currentLabel = t(CATEGORY_I18N[value as Category] ?? "categories.other");
+  const isBuiltIn = CATEGORIES.includes(value as Category);
+  const currentLabel = isBuiltIn
+    ? t(CATEGORY_I18N[value as Category])
+    : value || t("categories.other");
+
+  const promptCustom = useCallback(() => {
+    if (Platform.OS === "ios") {
+      Alert.prompt(
+        t("categories.enterCategory"),
+        undefined,
+        (text) => {
+          const trimmed = text?.trim();
+          if (trimmed) onChange(trimmed);
+        },
+        "plain-text",
+        "",
+        t("categories.categoryPlaceholder")
+      );
+    } else {
+      // Android fallback — Alert.prompt not available
+      Alert.alert(t("categories.enterCategory"), t("categories.categoryPlaceholder"));
+    }
+  }, [t, onChange]);
 
   const showPicker = useCallback(() => {
     const options = CATEGORIES.map((c) => t(CATEGORY_I18N[c]));
+    const customLabel = t("categories.custom");
 
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: [...options, t("common.cancel")],
-          cancelButtonIndex: options.length,
+          options: [...options, customLabel, t("common.cancel")],
+          cancelButtonIndex: options.length + 1,
         },
         (index) => {
           if (index < CATEGORIES.length) {
             onChange(CATEGORIES[index]);
+          } else if (index === CATEGORIES.length) {
+            promptCustom();
           }
         }
       );
     } else {
       Alert.alert(
-        t("medication.selectCategory"),
+        t("tracker.selectCategory"),
         undefined,
         [
           ...CATEGORIES.map((c, i) => ({
             text: options[i],
             onPress: () => onChange(c),
           })),
+          { text: customLabel, onPress: promptCustom },
           { text: t("common.cancel"), style: "cancel" as const },
         ]
       );
     }
-  }, [t, onChange]);
+  }, [t, onChange, promptCustom]);
 
   return (
     <Pressable
@@ -84,7 +110,7 @@ export function CategoryPicker({
           ? `${accessibilityLabelPrefix}: ${currentLabel}`
           : currentLabel
       }
-      accessibilityHint={t("medication.tapToChangeCategory")}
+      accessibilityHint={t("tracker.tapToChangeCategory")}
     >
       <ThemedText style={styles.text}>{currentLabel}</ThemedText>
       <ThemedText variant="secondary" style={styles.chevron}>▾</ThemedText>

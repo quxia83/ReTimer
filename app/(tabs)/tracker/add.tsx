@@ -18,10 +18,10 @@ import { Button } from "@/components/ui/Button";
 import { DurationInput } from "@/components/DurationInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { PresetPicker, Preset } from "@/components/PresetPicker";
-import { insertMedication } from "@/db/queries/medications";
+import { insertTracker } from "@/db/queries/trackers";
 import { colors } from "@/lib/constants";
 
-export default function AddMedicationScreen() {
+export default function AddTrackerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const isDark = useColorScheme() === "dark";
@@ -57,16 +57,16 @@ export default function AddMedicationScreen() {
   const handleSave = useCallback(async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      Alert.alert("", t("medication.nameRequired"));
+      Alert.alert("", t("tracker.nameRequired"));
       return;
     }
 
     if (cooldownMin > cooldownMax && cooldownMax > 0) {
-      Alert.alert("", t("medication.minExceedsMax"));
+      Alert.alert("", t("tracker.minExceedsMax"));
       return;
     }
 
-    await insertMedication({
+    await insertTracker({
       name: trimmedName,
       cooldownMin,
       cooldownMax: cooldownMax > 0 ? cooldownMax : cooldownMin,
@@ -82,7 +82,7 @@ export default function AddMedicationScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: t("medication.add"),
+          title: t("tracker.add"),
           headerBackTitle: "",
         }}
       />
@@ -106,83 +106,83 @@ export default function AddMedicationScreen() {
               },
             ]}
             accessibilityRole="button"
-            accessibilityLabel={t("medication.fromPreset")}
+            accessibilityLabel={t("tracker.fromPreset")}
           >
             <ThemedText style={styles.presetButtonText}>
-              {t("medication.fromPreset")}
+              {t("tracker.fromPreset")}
             </ThemedText>
           </Pressable>
 
           {showPresets && <PresetPicker onSelect={handlePresetSelect} />}
 
           {/* Name */}
-          <ThemedText style={styles.label}>{t("medication.name")}</ThemedText>
+          <ThemedText style={styles.label}>{t("tracker.name")}</ThemedText>
           <TextInput
             style={inputStyle}
             value={name}
             onChangeText={setName}
-            placeholder={t("medication.namePlaceholder")}
+            placeholder={t("tracker.namePlaceholder")}
             placeholderTextColor={colors.textSecondary}
-            accessibilityLabel={t("medication.name")}
+            accessibilityLabel={t("tracker.name")}
             autoCapitalize="words"
           />
 
           {/* Category */}
-          <ThemedText style={styles.label}>{t("medication.category")}</ThemedText>
+          <ThemedText style={styles.label}>{t("tracker.category")}</ThemedText>
           <CategoryPicker
             value={category}
             onChange={setCategory}
-            accessibilityLabelPrefix={t("medication.category")}
+            accessibilityLabelPrefix={t("tracker.category")}
           />
 
           {/* Cooldown Min */}
-          <ThemedText style={styles.label}>{t("medication.cooldownMin")}</ThemedText>
+          <ThemedText style={styles.label}>{t("tracker.cooldownMin")}</ThemedText>
           <DurationInput
             key={`min-${presetKey}`}
             value={cooldownMin}
             onChange={setCooldownMin}
-            accessibilityLabelPrefix={t("medication.cooldownMin")}
+            accessibilityLabelPrefix={t("tracker.cooldownMin")}
           />
 
           {/* Cooldown Max */}
-          <ThemedText style={styles.label}>{t("medication.cooldownMax")}</ThemedText>
+          <ThemedText style={styles.label}>{t("tracker.cooldownMax")}</ThemedText>
           <DurationInput
             key={`max-${presetKey}`}
             value={cooldownMax}
             onChange={setCooldownMax}
-            accessibilityLabelPrefix={t("medication.cooldownMax")}
+            accessibilityLabelPrefix={t("tracker.cooldownMax")}
           />
 
           {/* Notes */}
-          <ThemedText style={styles.label}>{t("medication.notes")}</ThemedText>
+          <ThemedText style={styles.label}>{t("tracker.notes")}</ThemedText>
           <TextInput
             style={[...inputStyle, styles.multiline]}
             value={notes}
             onChangeText={setNotes}
-            placeholder={t("medication.notesPlaceholder")}
+            placeholder={t("tracker.notesPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             multiline
             numberOfLines={3}
-            accessibilityLabel={t("medication.notes")}
+            accessibilityLabel={t("tracker.notes")}
           />
 
           {/* Notifications */}
           <View style={styles.switchRow}>
             <ThemedText style={styles.label}>
-              {t("medication.notifications")}
+              {t("tracker.notifications")}
             </ThemedText>
             <Switch
               value={notifications}
               onValueChange={setNotifications}
               trackColor={{ true: colors.accent }}
-              accessibilityLabel={t("medication.notifications")}
+              accessibilityLabel={t("tracker.notifications")}
               accessibilityRole="switch"
             />
           </View>
 
           {/* Save */}
           <Button
-            title={t("medication.save")}
+            title={t("tracker.save")}
             onPress={handleSave}
             style={styles.saveButton}
           />

@@ -4,8 +4,8 @@
   "id": "62986528-179c-47d3-aa5f-6fe6ab7ee3b6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "dose_logs": {
-      "name": "dose_logs",
+    "entry_logs": {
+      "name": "entry_logs",
       "columns": {
         "id": {
           "name": "id",
@@ -14,15 +14,15 @@
           "notNull": true,
           "autoincrement": true
         },
-        "medication_id": {
-          "name": "medication_id",
+        "tracker_id": {
+          "name": "tracker_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "taken_at": {
-          "name": "taken_at",
+        "logged_at": {
+          "name": "logged_at",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -38,12 +38,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "dose_logs_medication_id_medications_id_fk": {
-          "name": "dose_logs_medication_id_medications_id_fk",
-          "tableFrom": "dose_logs",
-          "tableTo": "medications",
+        "entry_logs_tracker_id_trackers_id_fk": {
+          "name": "entry_logs_tracker_id_trackers_id_fk",
+          "tableFrom": "entry_logs",
+          "tableTo": "trackers",
           "columnsFrom": [
-            "medication_id"
+            "tracker_id"
           ],
           "columnsTo": [
             "id"
@@ -56,8 +56,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "medications": {
-      "name": "medications",
+    "trackers": {
+      "name": "trackers",
       "columns": {
         "id": {
           "name": "id",

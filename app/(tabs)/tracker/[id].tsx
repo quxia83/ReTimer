@@ -8,10 +8,11 @@ import {
   Platform,
   Pressable,
   Alert,
+  Modal,
   useColorScheme,
   View,
-  FlatList,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -21,15 +22,15 @@ import { Card } from "@/components/ui/Card";
 import { DurationInput } from "@/components/DurationInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import {
-  getMedication,
-  updateMedication,
-  deleteMedication,
-} from "@/db/queries/medications";
-import { getDoseHistory } from "@/db/queries/doseLogs";
+  getTracker,
+  updateTracker,
+  deleteTracker,
+} from "@/db/queries/trackers";
+import { getEntryHistory, logEntry } from "@/db/queries/entries";
 import { colors } from "@/lib/constants";
 import { formatCooldownRange } from "@/lib/duration";
 
-interface MedicationData {
+interface TrackerData {
   id: number;
   name: string;
   cooldownMin: number;
@@ -39,11 +40,11 @@ interface MedicationData {
   notifyEnabled: number | null;
 }
 
-interface DoseRow {
+interface EntryRow {
   id: number;
-  medicationId: number;
-  medicationName: string;
-  takenAt: string;
+  trackerId: number;
+  trackerName: string;
+  loggedAt: string;
 }
 
 function formatDateTime(iso: string): string {
@@ -56,15 +57,17 @@ function formatDateTime(iso: string): string {
   });
 }
 
-export default function MedicationDetailScreen() {
+export default function TrackerDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isDark = useColorScheme() === "dark";
 
-  const [medication, setMedication] = useState<MedicationData | null>(null);
-  const [doses, setDoses] = useState<DoseRow[]>([]);
+  const [tracker, setTracker] = useState<TrackerData | null>(null);
+  const [entries, setEntries] = useState<EntryRow[]>([]);
   const [editing, setEditing] = useState(false);
+  const [showBackfill, setShowBackfill] = useState(false);
+  const [backfillDate, setBackfillDate] = useState(new Date());
 
   // Edit form state
   const [editName, setEditName] = useState("");
@@ -75,17 +78,17 @@ export default function MedicationDetailScreen() {
   const [editNotifications, setEditNotifications] = useState(true);
   const [editKey, setEditKey] = useState(0);
 
-  const medId = parseInt(id ?? "0", 10);
+  const trackerId = parseInt(id ?? "0", 10);
 
   const loadData = useCallback(async () => {
-    if (!medId) return;
-    const med = await getMedication(medId);
-    if (med) {
-      setMedication(med as MedicationData);
+    if (!trackerId) return;
+    const trackerRow = await getTracker(trackerId);
+    if (trackerRow) {
+      setTracker(trackerRow as TrackerData);
     }
-    const history = await getDoseHistory(medId);
-    setDoses((history as DoseRow[]).slice(0, 20));
-  }, [medId]);
+    const history = await getEntryHistory(trackerId);
+    setEntries((history as EntryRow[]).slice(0, 20));
+  }, [trackerId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -94,30 +97,30 @@ export default function MedicationDetailScreen() {
   );
 
   const startEditing = useCallback(() => {
-    if (!medication) return;
-    setEditName(medication.name);
-    setEditNotes(medication.notes ?? "");
-    setEditCooldownMin(medication.cooldownMin);
-    setEditCooldownMax(medication.cooldownMax);
-    setEditCategory(medication.category ?? "other");
-    setEditNotifications((medication.notifyEnabled ?? 1) === 1);
+    if (!tracker) return;
+    setEditName(tracker.name);
+    setEditNotes(tracker.notes ?? "");
+    setEditCooldownMin(tracker.cooldownMin);
+    setEditCooldownMax(tracker.cooldownMax);
+    setEditCategory(tracker.category ?? "other");
+    setEditNotifications((tracker.notifyEnabled ?? 1) === 1);
     setEditKey((k) => k + 1);
     setEditing(true);
-  }, [medication]);
+  }, [tracker]);
 
   const handleSave = useCallback(async () => {
     const trimmedName = editName.trim();
     if (!trimmedName) {
-      Alert.alert("", t("medication.nameRequired"));
+      Alert.alert("", t("tracker.nameRequired"));
       return;
     }
 
     if (editCooldownMin > editCooldownMax && editCooldownMax > 0) {
-      Alert.alert("", t("medication.minExceedsMax"));
+      Alert.alert("", t("tracker.minExceedsMax"));
       return;
     }
 
-    await updateMedication(medId, {
+    await updateTracker(trackerId, {
       name: trimmedName,
       cooldownMin: editCooldownMin,
       cooldownMax: editCooldownMax > 0 ? editCooldownMax : editCooldownMin,
@@ -128,21 +131,27 @@ export default function MedicationDetailScreen() {
 
     setEditing(false);
     await loadData();
-  }, [editName, editCooldownMin, editCooldownMax, editNotes, editCategory, editNotifications, medId, loadData, t]);
+  }, [editName, editCooldownMin, editCooldownMax, editNotes, editCategory, editNotifications, trackerId, loadData, t]);
 
   const handleDelete = useCallback(() => {
-    Alert.alert(t("medication.delete"), t("medication.deleteConfirm"), [
+    Alert.alert(t("tracker.delete"), t("tracker.deleteConfirm"), [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
-          await deleteMedication(medId);
+          await deleteTracker(trackerId);
           router.back();
         },
       },
     ]);
-  }, [medId, router, t]);
+  }, [trackerId, router, t]);
+
+  const handleBackfillConfirm = useCallback(async () => {
+    await logEntry(trackerId, backfillDate);
+    setShowBackfill(false);
+    await loadData();
+  }, [trackerId, backfillDate, loadData]);
 
   const inputStyle = [
     styles.input,
@@ -153,7 +162,7 @@ export default function MedicationDetailScreen() {
     },
   ];
 
-  if (!medication) {
+  if (!tracker) {
     return (
       <ThemedView style={styles.centered}>
         <Stack.Screen options={{ title: "" }} />
@@ -165,7 +174,7 @@ export default function MedicationDetailScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: medication.name,
+          title: tracker.name,
           headerBackTitle: "",
           headerRight: () =>
             !editing ? (
@@ -212,61 +221,61 @@ export default function MedicationDetailScreen() {
           {editing ? (
             /* ---- Edit Form ---- */
             <>
-              <ThemedText style={styles.label}>{t("medication.name")}</ThemedText>
+              <ThemedText style={styles.label}>{t("tracker.name")}</ThemedText>
               <TextInput
                 style={inputStyle}
                 value={editName}
                 onChangeText={setEditName}
-                placeholder={t("medication.namePlaceholder")}
+                placeholder={t("tracker.namePlaceholder")}
                 placeholderTextColor={colors.textSecondary}
-                accessibilityLabel={t("medication.name")}
+                accessibilityLabel={t("tracker.name")}
                 autoCapitalize="words"
               />
 
-              <ThemedText style={styles.label}>{t("medication.category")}</ThemedText>
+              <ThemedText style={styles.label}>{t("tracker.category")}</ThemedText>
               <CategoryPicker
                 value={editCategory}
                 onChange={setEditCategory}
-                accessibilityLabelPrefix={t("medication.category")}
+                accessibilityLabelPrefix={t("tracker.category")}
               />
 
-              <ThemedText style={styles.label}>{t("medication.cooldownMin")}</ThemedText>
+              <ThemedText style={styles.label}>{t("tracker.cooldownMin")}</ThemedText>
               <DurationInput
                 key={`min-${editKey}`}
                 value={editCooldownMin}
                 onChange={setEditCooldownMin}
-                accessibilityLabelPrefix={t("medication.cooldownMin")}
+                accessibilityLabelPrefix={t("tracker.cooldownMin")}
               />
 
-              <ThemedText style={styles.label}>{t("medication.cooldownMax")}</ThemedText>
+              <ThemedText style={styles.label}>{t("tracker.cooldownMax")}</ThemedText>
               <DurationInput
                 key={`max-${editKey}`}
                 value={editCooldownMax}
                 onChange={setEditCooldownMax}
-                accessibilityLabelPrefix={t("medication.cooldownMax")}
+                accessibilityLabelPrefix={t("tracker.cooldownMax")}
               />
 
-              <ThemedText style={styles.label}>{t("medication.notes")}</ThemedText>
+              <ThemedText style={styles.label}>{t("tracker.notes")}</ThemedText>
               <TextInput
                 style={[...inputStyle, styles.multiline]}
                 value={editNotes}
                 onChangeText={setEditNotes}
-                placeholder={t("medication.notesPlaceholder")}
+                placeholder={t("tracker.notesPlaceholder")}
                 placeholderTextColor={colors.textSecondary}
                 multiline
                 numberOfLines={3}
-                accessibilityLabel={t("medication.notes")}
+                accessibilityLabel={t("tracker.notes")}
               />
 
               <View style={styles.switchRow}>
                 <ThemedText style={styles.label}>
-                  {t("medication.notifications")}
+                  {t("tracker.notifications")}
                 </ThemedText>
                 <Switch
                   value={editNotifications}
                   onValueChange={setEditNotifications}
                   trackColor={{ true: colors.accent }}
-                  accessibilityLabel={t("medication.notifications")}
+                  accessibilityLabel={t("tracker.notifications")}
                   accessibilityRole="switch"
                 />
               </View>
@@ -279,7 +288,7 @@ export default function MedicationDetailScreen() {
                   style={styles.editButton}
                 />
                 <Button
-                  title={t("medication.save")}
+                  title={t("tracker.save")}
                   onPress={handleSave}
                   style={styles.editButton}
                 />
@@ -289,57 +298,74 @@ export default function MedicationDetailScreen() {
             /* ---- Detail View ---- */
             <>
               <Card style={styles.infoCard}>
-                <ThemedText style={styles.infoLabel}>{t("medication.name")}</ThemedText>
-                <ThemedText style={styles.infoValue}>{medication.name}</ThemedText>
+                <ThemedText style={styles.infoLabel}>{t("tracker.name")}</ThemedText>
+                <ThemedText style={styles.infoValue}>{tracker.name}</ThemedText>
 
                 <ThemedText style={[styles.infoLabel, styles.infoLabelSpaced]}>
-                  {t("medication.category")}
+                  {t("tracker.category")}
                 </ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {t(`categories.${medication.category ?? "other"}`)}
+                  {["health", "vehicle", "home", "personal", "other"].includes(tracker.category ?? "other")
+                    ? t(`categories.${tracker.category ?? "other"}`)
+                    : tracker.category}
                 </ThemedText>
 
                 <ThemedText style={[styles.infoLabel, styles.infoLabelSpaced]}>
-                  {t("medication.cooldownMin")} / {t("medication.cooldownMax")}
+                  {t("tracker.cooldownMin")} / {t("tracker.cooldownMax")}
                 </ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {formatCooldownRange(medication.cooldownMin, medication.cooldownMax)}
+                  {formatCooldownRange(tracker.cooldownMin, tracker.cooldownMax)}
                 </ThemedText>
 
-                {medication.notes ? (
+                {tracker.notes ? (
                   <>
                     <ThemedText style={[styles.infoLabel, styles.infoLabelSpaced]}>
-                      {t("medication.notes")}
+                      {t("tracker.notes")}
                     </ThemedText>
                     <ThemedText style={styles.infoValue}>
-                      {medication.notes}
+                      {tracker.notes}
                     </ThemedText>
                   </>
                 ) : null}
 
                 <ThemedText style={[styles.infoLabel, styles.infoLabelSpaced]}>
-                  {t("medication.notifications")}
+                  {t("tracker.notifications")}
                 </ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {(medication.notifyEnabled ?? 1) === 1
+                  {(tracker.notifyEnabled ?? 1) === 1
                     ? t("common.yes")
                     : t("common.no")}
                 </ThemedText>
               </Card>
 
-              {/* Dose History */}
-              <ThemedText style={styles.sectionTitle}>
-                {t("history.title")}
-              </ThemedText>
-              {doses.length === 0 ? (
+              {/* Entry History */}
+              <View style={styles.sectionHeaderRow}>
+                <ThemedText style={styles.sectionTitle}>
+                  {t("history.title")}
+                </ThemedText>
+                <Pressable
+                  onPress={() => {
+                    setBackfillDate(new Date());
+                    setShowBackfill(true);
+                  }}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("entry.backfill")}
+                >
+                  <ThemedText style={styles.backfillLink}>
+                    {t("entry.backfill")}
+                  </ThemedText>
+                </Pressable>
+              </View>
+              {entries.length === 0 ? (
                 <ThemedText variant="secondary" style={styles.emptyText}>
                   {t("history.empty")}
                 </ThemedText>
               ) : (
-                doses.map((dose) => (
-                  <Card key={dose.id} style={styles.doseRow}>
-                    <ThemedText style={styles.doseTime}>
-                      {formatDateTime(dose.takenAt)}
+                entries.map((entry) => (
+                  <Card key={entry.id} style={styles.entryRow}>
+                    <ThemedText style={styles.entryTime}>
+                      {formatDateTime(entry.loggedAt)}
                     </ThemedText>
                   </Card>
                 ))
@@ -348,6 +374,59 @@ export default function MedicationDetailScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Backfill Modal */}
+      <Modal
+        visible={showBackfill}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowBackfill(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: isDark ? colors.surfaceDark : "#ffffff",
+              },
+            ]}
+          >
+            <ThemedText style={styles.modalTitle}>
+              {t("entry.backfill")}
+            </ThemedText>
+            <DateTimePicker
+              value={backfillDate}
+              mode="datetime"
+              display="spinner"
+              maximumDate={new Date()}
+              onChange={(_event, date) => {
+                if (date) setBackfillDate(date);
+              }}
+              themeVariant={isDark ? "dark" : "light"}
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                onPress={() => setShowBackfill(false)}
+                style={styles.modalButton}
+                accessibilityRole="button"
+              >
+                <ThemedText style={styles.modalButtonText}>
+                  {t("common.cancel")}
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={handleBackfillConfirm}
+                style={[styles.modalButton, styles.modalButtonPrimary]}
+                accessibilityRole="button"
+              >
+                <ThemedText style={[styles.modalButtonText, { color: "#fff" }]}>
+                  {t("common.save")}
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -423,21 +502,70 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 17,
   },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    marginTop: 24,
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    marginTop: 24,
-    marginBottom: 12,
+  },
+  backfillLink: {
+    fontSize: 14,
+    color: colors.accent,
   },
   emptyText: {
     textAlign: "center",
     marginTop: 12,
   },
-  doseRow: {
+  entryRow: {
     marginBottom: 8,
     paddingVertical: 12,
   },
-  doseTime: {
+  entryTime: {
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+  },
+  modalButton: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalButtonPrimary: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

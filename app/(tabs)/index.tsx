@@ -12,15 +12,15 @@ import { useRouter, useFocusEffect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { ThemedView, ThemedText } from "@/components/Themed";
-import { MedicationCard } from "@/components/MedicationCard";
+import { TrackerCard } from "@/components/TrackerCard";
 import { EmptyState } from "@/components/EmptyState";
-import { getAllMedications } from "@/db/queries/medications";
-import { getLastDose, logDose } from "@/db/queries/doseLogs";
+import { getAllTrackers } from "@/db/queries/trackers";
+import { getLastEntry, logEntry } from "@/db/queries/entries";
 import { scheduleCooldownNotification } from "@/lib/notifications";
 import { colors } from "@/lib/constants";
 import { formatCountdown, formatDuration } from "@/lib/duration";
 
-interface MedicationRow {
+interface TrackerRow {
   id: number;
   name: string;
   cooldownMin: number;
@@ -31,8 +31,8 @@ interface MedicationRow {
 }
 
 interface DashboardItem {
-  medication: MedicationRow;
-  lastDoseAt: string | null;
+  tracker: TrackerRow;
+  lastEntryAt: string | null;
 }
 
 const CATEGORY_I18N: Record<string, string> = {
@@ -52,21 +52,21 @@ export default function DashboardScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    const meds = await getAllMedications();
+    const trackers = await getAllTrackers();
     const results: DashboardItem[] = await Promise.all(
-      meds.map(async (med) => {
-        const lastDose = await getLastDose(med.id);
+      trackers.map(async (tracker) => {
+        const lastEntry = await getLastEntry(tracker.id);
         return {
-          medication: {
-            id: med.id,
-            name: med.name,
-            cooldownMin: med.cooldownMin,
-            cooldownMax: med.cooldownMax,
-            notes: med.notes ?? null,
-            notifyEnabled: med.notifyEnabled ?? 1,
-            category: med.category ?? null,
+          tracker: {
+            id: tracker.id,
+            name: tracker.name,
+            cooldownMin: tracker.cooldownMin,
+            cooldownMax: tracker.cooldownMax,
+            notes: tracker.notes ?? null,
+            notifyEnabled: tracker.notifyEnabled ?? 1,
+            category: tracker.category ?? null,
           },
-          lastDoseAt: lastDose?.takenAt ?? null,
+          lastEntryAt: lastEntry?.loggedAt ?? null,
         };
       })
     );
@@ -77,14 +77,14 @@ export default function DashboardScreen() {
   const categories = useMemo(() => {
     const cats = new Set<string>();
     for (const item of items) {
-      if (item.medication.category) cats.add(item.medication.category);
+      if (item.tracker.category) cats.add(item.tracker.category);
     }
     return Array.from(cats);
   }, [items]);
 
   const filteredItems = useMemo(() => {
     if (!selectedCategory) return items;
-    return items.filter((i) => i.medication.category === selectedCategory);
+    return items.filter((i) => i.tracker.category === selectedCategory);
   }, [items, selectedCategory]);
 
   useFocusEffect(
@@ -99,18 +99,18 @@ export default function DashboardScreen() {
     setRefreshing(false);
   }, [loadData]);
 
-  const handleLogDose = useCallback(
-    async (medicationId: number) => {
-      const item = items.find((i) => i.medication.id === medicationId);
+  const handleLogEntry = useCallback(
+    async (trackerId: number) => {
+      const item = items.find((i) => i.tracker.id === trackerId);
       if (!item) return;
 
       const doLog = async () => {
-        await logDose(medicationId);
-        if (item.medication.notifyEnabled) {
+        await logEntry(trackerId);
+        if (item.tracker.notifyEnabled) {
           await scheduleCooldownNotification(
-            item.medication.name,
-            item.medication.cooldownMax,
-            medicationId
+            item.tracker.name,
+            item.tracker.cooldownMax,
+            trackerId
           );
         }
         await loadData();
@@ -118,35 +118,35 @@ export default function DashboardScreen() {
 
       // Determine current status to decide whether to confirm
       const status = getCooldownStatus(
-        item.lastDoseAt,
-        item.medication.cooldownMin,
-        item.medication.cooldownMax
+        item.lastEntryAt,
+        item.tracker.cooldownMin,
+        item.tracker.cooldownMax
       );
 
       if (status === "green") {
         await doLog();
       } else {
-        const elapsed = item.lastDoseAt
+        const elapsed = item.lastEntryAt
           ? formatCountdown(
               Math.floor(
-                (Date.now() - new Date(item.lastDoseAt).getTime()) / 1000
+                (Date.now() - new Date(item.lastEntryAt).getTime()) / 1000
               )
             )
           : "";
-        const minStr = formatDuration(item.medication.cooldownMin);
-        const maxStr = formatDuration(item.medication.cooldownMax);
+        const minStr = formatDuration(item.tracker.cooldownMin);
+        const maxStr = formatDuration(item.tracker.cooldownMax);
 
         Alert.alert(
-          t("dose.logConfirmTitle"),
-          t("dose.logConfirmMessage", {
+          t("entry.logConfirmTitle"),
+          t("entry.logConfirmMessage", {
             elapsed,
             min: minStr,
             max: maxStr,
           }),
           [
-            { text: t("dose.cancel"), style: "cancel" },
+            { text: t("entry.cancel"), style: "cancel" },
             {
-              text: t("dose.logConfirmOk"),
+              text: t("entry.logConfirmOk"),
               style: "destructive",
               onPress: doLog,
             },
@@ -158,14 +158,14 @@ export default function DashboardScreen() {
   );
 
   const handleCardPress = useCallback(
-    (medicationId: number) => {
-      router.push(`/(tabs)/medication/${medicationId}`);
+    (trackerId: number) => {
+      router.push(`/(tabs)/tracker/${trackerId}`);
     },
     [router]
   );
 
   const navigateToAdd = useCallback(() => {
-    router.push("/(tabs)/medication/add");
+    router.push("/(tabs)/tracker/add");
   }, [router]);
 
   return (
@@ -177,7 +177,7 @@ export default function DashboardScreen() {
             <Pressable
               onPress={navigateToAdd}
               hitSlop={8}
-              accessibilityLabel={t("dashboard.addMedication")}
+              accessibilityLabel={t("dashboard.addTracker")}
               accessibilityRole="button"
             >
               <FontAwesome
@@ -249,7 +249,7 @@ export default function DashboardScreen() {
                           : isDark ? colors.borderDark : colors.border,
                       },
                     ]}
-                    accessibilityLabel={t(CATEGORY_I18N[cat] ?? cat)}
+                    accessibilityLabel={CATEGORY_I18N[cat] ? t(CATEGORY_I18N[cat]) : cat}
                     accessibilityRole="button"
                     accessibilityState={{ selected: selectedCategory === cat }}
                   >
@@ -259,7 +259,7 @@ export default function DashboardScreen() {
                         selectedCategory === cat && styles.chipTextSelected,
                       ]}
                     >
-                      {t(CATEGORY_I18N[cat] ?? cat)}
+                      {CATEGORY_I18N[cat] ? t(CATEGORY_I18N[cat]) : cat}
                     </ThemedText>
                   </Pressable>
                 ))}
@@ -268,12 +268,12 @@ export default function DashboardScreen() {
           )}
           <FlatList
             data={filteredItems}
-            keyExtractor={(item) => String(item.medication.id)}
+            keyExtractor={(item) => String(item.tracker.id)}
             renderItem={({ item }) => (
-              <MedicationCard
-                medication={item.medication}
-                lastDoseAt={item.lastDoseAt}
-                onLogDose={handleLogDose}
+              <TrackerCard
+                tracker={item.tracker}
+                lastEntryAt={item.lastEntryAt}
+                onLogEntry={handleLogEntry}
                 onPress={handleCardPress}
               />
             )}
@@ -288,14 +288,14 @@ export default function DashboardScreen() {
   );
 }
 
-/** Inline cooldown check for the log-dose confirmation flow */
+/** Inline cooldown check for the log-entry confirmation flow */
 function getCooldownStatus(
-  lastDoseAt: string | null,
+  lastEntryAt: string | null,
   cooldownMin: number,
   cooldownMax: number
 ): "green" | "yellow" | "red" {
-  if (!lastDoseAt) return "green";
-  const elapsed = (Date.now() - new Date(lastDoseAt).getTime()) / 1000;
+  if (!lastEntryAt) return "green";
+  const elapsed = (Date.now() - new Date(lastEntryAt).getTime()) / 1000;
   if (elapsed >= cooldownMax * 60) return "green";
   if (elapsed >= cooldownMin * 60) return "yellow";
   return "red";

@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import i18n from "@/lib/i18n";
 import { db } from "@/db/client";
-import { medications, doseLogs, settings } from "@/db/schema";
+import { trackers, entryLogs, settings } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 Notifications.setNotificationHandler({
@@ -22,27 +22,27 @@ export async function requestNotificationPermissions() {
 }
 
 export async function scheduleCooldownNotification(
-  medicationName: string,
+  trackerName: string,
   cooldownMaxMinutes: number,
-  medicationId: number
+  trackerId: number
 ) {
-  await cancelCooldownNotification(medicationId);
+  await cancelCooldownNotification(trackerId);
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: medicationName,
-      body: i18n.t("notification.intervalComplete", { name: medicationName }),
+      title: trackerName,
+      body: i18n.t("notification.intervalComplete", { name: trackerName }),
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds: cooldownMaxMinutes * 60,
     },
-    identifier: `cooldown-${medicationId}`,
+    identifier: `cooldown-${trackerId}`,
   });
 }
 
-export async function cancelCooldownNotification(medicationId: number) {
-  await Notifications.cancelScheduledNotificationAsync(`cooldown-${medicationId}`);
+export async function cancelCooldownNotification(trackerId: number) {
+  await Notifications.cancelScheduledNotificationAsync(`cooldown-${trackerId}`);
 }
 
 /**
@@ -65,40 +65,40 @@ export async function rescheduleAllNotifications() {
     // Cancel all existing scheduled notifications to avoid duplicates
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    // Get all medications with notifications enabled
-    const meds = await db
+    // Get all trackers with notifications enabled
+    const allTrackers = await db
       .select()
-      .from(medications)
-      .where(eq(medications.notifyEnabled, 1));
+      .from(trackers)
+      .where(eq(trackers.notifyEnabled, 1));
 
-    for (const med of meds) {
-      // Get last dose for this medication
-      const lastDoseRows = await db
+    for (const tracker of allTrackers) {
+      // Get last entry for this tracker
+      const lastEntryRows = await db
         .select()
-        .from(doseLogs)
-        .where(eq(doseLogs.medicationId, med.id))
-        .orderBy(desc(doseLogs.takenAt))
+        .from(entryLogs)
+        .where(eq(entryLogs.trackerId, tracker.id))
+        .orderBy(desc(entryLogs.loggedAt))
         .limit(1);
 
-      if (lastDoseRows.length === 0) continue;
+      if (lastEntryRows.length === 0) continue;
 
-      const lastDose = lastDoseRows[0];
-      const elapsed = (Date.now() - new Date(lastDose.takenAt).getTime()) / 1000;
-      const maxSeconds = med.cooldownMax * 60;
+      const lastEntry = lastEntryRows[0];
+      const elapsed = (Date.now() - new Date(lastEntry.loggedAt).getTime()) / 1000;
+      const maxSeconds = tracker.cooldownMax * 60;
       const remaining = maxSeconds - elapsed;
 
       // Only schedule if cooldown hasn't finished yet
       if (remaining > 0) {
         await Notifications.scheduleNotificationAsync({
           content: {
-            title: med.name,
-            body: i18n.t("notification.intervalComplete", { name: med.name }),
+            title: tracker.name,
+            body: i18n.t("notification.intervalComplete", { name: tracker.name }),
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
             seconds: Math.ceil(remaining),
           },
-          identifier: `cooldown-${med.id}`,
+          identifier: `cooldown-${tracker.id}`,
         });
       }
     }

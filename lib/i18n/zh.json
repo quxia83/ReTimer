@@ -1,17 +1,17 @@
 {
   "tabs": {
-    "medications": "追踪器",
+    "trackers": "追踪器",
     "history": "历史",
     "settings": "设置"
   },
   "dashboard": {
     "title": "追踪器",
-    "addMedication": "添加追踪器",
+    "addTracker": "添加追踪器",
     "empty": "还没有追踪器",
     "emptyHint": "添加你的第一个追踪器，开始监控时间间隔",
     "addFirst": "添加第一个追踪器"
   },
-  "medication": {
+  "tracker": {
     "add": "添加追踪器",
     "edit": "编辑追踪器",
     "name": "名称",
@@ -37,16 +37,19 @@
     "togglePresets": "切换预设列表",
     "notificationPermDenied": "通知权限被拒绝，请在设置中启用。"
   },
-  "dose": {
-    "logDose": "记录",
+  "entry": {
+    "log": "记录",
     "logConfirmTitle": "提前记录？",
     "logConfirmMessage": "距离上次记录已过 {{elapsed}}。建议间隔为 {{min}}-{{max}}。仍要记录吗？",
     "logConfirmOk": "仍然记录",
     "cancel": "取消",
-    "lastTaken": "上次记录：{{time}}",
-    "neverTaken": "暂无记录",
+    "lastLogged": "上次记录：{{time}}",
+    "neverLogged": "暂无记录",
     "tapToViewDetails": "双击查看详情",
-    "longPressToDelete": "长按删除"
+    "longPressToDelete": "长按删除",
+    "backfill": "补录过去记录",
+    "backfillPickDate": "选择日期和时间",
+    "backfillDone": "已补录 {{time}} 的记录"
   },
   "status": {
     "safe": "已就绪",
@@ -62,7 +65,9 @@
     "today": "今天",
     "yesterday": "昨天",
     "deleteConfirm": "删除此记录？",
-    "deleted": "记录已删除"
+    "deleted": "记录已删除",
+    "frequency": "频率",
+    "entries": "{{count}} 条记录"
   },
   "notification": {
     "intervalComplete": "{{name}} 的间隔时间已到。"
@@ -85,7 +90,10 @@
     "vehicle": "车辆",
     "home": "家居与电器",
     "personal": "个人护理",
-    "other": "其他"
+    "other": "其他",
+    "custom": "自定义...",
+    "enterCategory": "输入分类",
+    "categoryPlaceholder": "分类名称"
   },
   "presets": {
     "title": "预设追踪器",

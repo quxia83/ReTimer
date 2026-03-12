@@ -8,8 +8,10 @@ import { useCooldownStatus, CooldownStatus } from "@/hooks/useCooldownStatus";
 import { colors } from "@/lib/constants";
 import { formatCountdown } from "@/lib/duration";
 
-interface MedicationCardProps {
-  medication: {
+const BUILT_IN_CATS = ["health", "vehicle", "home", "personal", "other"];
+
+interface TrackerCardProps {
+  tracker: {
     id: number;
     name: string;
     cooldownMin: number;
@@ -18,9 +20,9 @@ interface MedicationCardProps {
     notifyEnabled: number;
     category: string | null;
   };
-  lastDoseAt: string | null;
-  onLogDose: (medicationId: number) => void;
-  onPress: (medicationId: number) => void;
+  lastEntryAt: string | null;
+  onLogEntry: (trackerId: number) => void;
+  onPress: (trackerId: number) => void;
 }
 
 function formatLastTaken(
@@ -60,18 +62,18 @@ function getBgColor(status: CooldownStatus, isDark: boolean): string {
   }
 }
 
-export function MedicationCard({
-  medication,
-  lastDoseAt,
-  onLogDose,
+export function TrackerCard({
+  tracker,
+  lastEntryAt,
+  onLogEntry,
   onPress,
-}: MedicationCardProps) {
+}: TrackerCardProps) {
   const { t } = useTranslation();
   const isDark = useColorScheme() === "dark";
   const { status, remainingSeconds } = useCooldownStatus(
-    lastDoseAt,
-    medication.cooldownMin,
-    medication.cooldownMax
+    lastEntryAt,
+    tracker.cooldownMin,
+    tracker.cooldownMax
   );
 
   const trafficColor = getTrafficColor(status);
@@ -86,24 +88,24 @@ export function MedicationCard({
             time: formatCountdown(remainingSeconds),
           });
 
-  const lastTakenText = lastDoseAt
-    ? t("dose.lastTaken", { time: formatLastTaken(lastDoseAt, t) })
-    : t("dose.neverTaken");
+  const lastTakenText = lastEntryAt
+    ? t("entry.lastLogged", { time: formatLastTaken(lastEntryAt, t) })
+    : t("entry.neverLogged");
 
-  // Descriptive label for VoiceOver: e.g. "Ibuprofen: red, wait 2h 15m"
+  // Descriptive label for VoiceOver
   const trafficAccessibilityLabel =
     status === "green"
-      ? `${medication.name}: ${t("status.safe")}`
+      ? `${tracker.name}: ${t("status.safe")}`
       : status === "red"
-        ? `${medication.name}: ${t("status.wait", { time: formatCountdown(remainingSeconds) })}`
-        : `${medication.name}: ${t("status.approachingTime", { time: formatCountdown(remainingSeconds) })}`;
+        ? `${tracker.name}: ${t("status.wait", { time: formatCountdown(remainingSeconds) })}`
+        : `${tracker.name}: ${t("status.approachingTime", { time: formatCountdown(remainingSeconds) })}`;
 
   return (
     <Card
-      onPress={() => onPress(medication.id)}
+      onPress={() => onPress(tracker.id)}
       style={[styles.card, { backgroundColor: bgColor }]}
-      accessibilityLabel={`${medication.name}, ${statusText}`}
-      accessibilityHint={t("dose.tapToViewDetails")}
+      accessibilityLabel={`${tracker.name}, ${statusText}`}
+      accessibilityHint={t("entry.tapToViewDetails")}
     >
       <View style={styles.header}>
         <View style={styles.titleArea}>
@@ -111,16 +113,18 @@ export function MedicationCard({
             style={styles.name}
             accessibilityRole="header"
           >
-            {medication.name}
+            {tracker.name}
           </ThemedText>
-          {medication.category && medication.category !== "other" ? (
+          {tracker.category && tracker.category !== "other" ? (
             <ThemedText variant="secondary" style={styles.category}>
-              {t(`categories.${medication.category}`)}
+              {BUILT_IN_CATS.includes(tracker.category)
+                ? t(`categories.${tracker.category}`)
+                : tracker.category}
             </ThemedText>
           ) : null}
-          {medication.notes ? (
+          {tracker.notes ? (
             <ThemedText variant="secondary" style={styles.notes}>
-              {medication.notes}
+              {tracker.notes}
             </ThemedText>
           ) : null}
         </View>
@@ -141,9 +145,9 @@ export function MedicationCard({
       </ThemedText>
 
       <Button
-        title={t("dose.logDose")}
+        title={t("entry.log")}
         variant={status === "green" ? "primary" : "secondary"}
-        onPress={() => onLogDose(medication.id)}
+        onPress={() => onLogEntry(tracker.id)}
         style={styles.logButton}
       />
     </Card>

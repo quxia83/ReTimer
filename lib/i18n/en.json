@@ -1,17 +1,17 @@
 {
   "tabs": {
-    "medications": "Trackers",
+    "trackers": "Trackers",
     "history": "History",
     "settings": "Settings"
   },
   "dashboard": {
     "title": "Trackers",
-    "addMedication": "Add Tracker",
+    "addTracker": "Add Tracker",
     "empty": "No trackers yet",
     "emptyHint": "Add your first tracker to start monitoring intervals",
     "addFirst": "Add Your First Tracker"
   },
-  "medication": {
+  "tracker": {
     "add": "Add Tracker",
     "edit": "Edit Tracker",
     "name": "Name",
@@ -37,16 +37,19 @@
     "togglePresets": "Toggle preset list",
     "notificationPermDenied": "Notification permission was denied. Please enable it in Settings."
   },
-  "dose": {
-    "logDose": "Log Entry",
+  "entry": {
+    "log": "Log Entry",
     "logConfirmTitle": "Log Early?",
     "logConfirmMessage": "It's been {{elapsed}} since your last entry. The recommended interval is {{min}}-{{max}}. Log anyway?",
     "logConfirmOk": "Log Anyway",
     "cancel": "Cancel",
-    "lastTaken": "Last logged: {{time}}",
-    "neverTaken": "No entries logged",
+    "lastLogged": "Last logged: {{time}}",
+    "neverLogged": "No entries logged",
     "tapToViewDetails": "Double-tap to view details",
-    "longPressToDelete": "Long press to delete"
+    "longPressToDelete": "Long press to delete",
+    "backfill": "Log Past Entry",
+    "backfillPickDate": "Pick Date & Time",
+    "backfillDone": "Entry logged for {{time}}"
   },
   "status": {
     "safe": "Ready",
@@ -62,7 +65,9 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "deleteConfirm": "Delete this log entry?",
-    "deleted": "Log entry deleted"
+    "deleted": "Log entry deleted",
+    "frequency": "Frequency",
+    "entries": "{{count}} entries"
   },
   "notification": {
     "intervalComplete": "{{name}} interval is complete."
@@ -85,7 +90,10 @@
     "vehicle": "Vehicle",
     "home": "Home & Appliance",
     "personal": "Personal Care",
-    "other": "Other"
+    "other": "Other",
+    "custom": "Custom...",
+    "enterCategory": "Enter Category",
+    "categoryPlaceholder": "Category name"
   },
   "presets": {
     "title": "Preset Trackers",

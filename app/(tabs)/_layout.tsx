@@ -34,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t("tabs.medications"),
+          title: t("tabs.trackers"),
           tabBarIcon: ({ color }) => <TabBarIcon name="repeat" color={color} />,
         }}
       />
@@ -54,8 +54,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
         }}
       />
-      <Tabs.Screen name="medication/add" options={{ href: null }} />
-      <Tabs.Screen name="medication/[id]" options={{ href: null }} />
+      <Tabs.Screen name="tracker/add" options={{ href: null }} />
+      <Tabs.Screen name="tracker/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -2,15 +2,15 @@
 
 import journal from './meta/_journal.json';
 
-const m0000 = `CREATE TABLE \`dose_logs\` (
+const m0000 = `CREATE TABLE \`entry_logs\` (
 \t\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-\t\`medication_id\` integer NOT NULL,
-\t\`taken_at\` text NOT NULL,
+\t\`tracker_id\` integer NOT NULL,
+\t\`logged_at\` text NOT NULL,
 \t\`created_at\` text NOT NULL,
-\tFOREIGN KEY (\`medication_id\`) REFERENCES \`medications\`(\`id\`) ON UPDATE no action ON DELETE cascade
+\tFOREIGN KEY (\`tracker_id\`) REFERENCES \`trackers\`(\`id\`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE \`medications\` (
+CREATE TABLE \`trackers\` (
 \t\`id\` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 \t\`name\` text NOT NULL,
 \t\`cooldown_min\` integer NOT NULL,
