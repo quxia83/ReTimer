@@ -26,6 +26,8 @@
     "deleteConfirm": "确定要删除此追踪器吗？所有历史记录也将被删除。",
     "fromPreset": "从预设中选择",
     "custom": "自定义追踪器",
+    "nameRequired": "请输入追踪器名称。",
+    "minExceedsMax": "最短间隔不能超过最长间隔。",
     "hours": "小时",
     "minutes": "分钟",
     "selectPreset": "双击选择此预设",
@@ -44,8 +46,8 @@
     "longPressToDelete": "长按删除"
   },
   "status": {
-    "safe": "可以执行",
-    "approaching": "即将可以执行",
+    "safe": "已就绪",
+    "approaching": "即将就绪",
     "wait": "还需等待 {{time}}",
     "approachingTime": "还剩 {{time}}"
   },
@@ -58,6 +60,9 @@
     "yesterday": "昨天",
     "deleteConfirm": "删除此记录？",
     "deleted": "记录已删除"
+  },
+  "notification": {
+    "intervalComplete": "{{name}} 的间隔时间已到。"
   },
   "settings": {
     "title": "设置",
@@ -73,7 +78,7 @@
     "developer": "开发者"
   },
   "categories": {
-    "health": "健康与药物",
+    "health": "健康",
     "vehicle": "车辆",
     "home": "家居与电器",
     "personal": "个人护理",
@@ -97,6 +102,18 @@
     "haircut": "理发",
     "dentalCheckup": "牙科检查",
     "eyeExam": "眼科检查"
+  },
+  "duration": {
+    "value": "数值",
+    "unit": "单位",
+    "selectUnit": "选择单位",
+    "tapToChangeUnit": "点击更改单位",
+    "minutes": "分钟",
+    "hours": "小时",
+    "days": "天",
+    "weeks": "周",
+    "months": "月",
+    "years": "年"
   },
   "common": {
     "save": "保存",

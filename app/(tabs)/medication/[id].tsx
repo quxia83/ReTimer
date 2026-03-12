@@ -18,6 +18,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { DurationInput } from "@/components/DurationInput";
 import {
   getMedication,
   updateMedication,
@@ -25,6 +26,7 @@ import {
 } from "@/db/queries/medications";
 import { getDoseHistory } from "@/db/queries/doseLogs";
 import { colors } from "@/lib/constants";
+import { formatCooldownRange } from "@/lib/duration";
 
 interface MedicationData {
   id: number;
@@ -40,22 +42,6 @@ interface DoseRow {
   medicationId: number;
   medicationName: string;
   takenAt: string;
-}
-
-function minutesToHM(total: number) {
-  return { h: Math.floor(total / 60), m: total % 60 };
-}
-
-function formatCooldown(min: number, max: number): string {
-  const fmt = (m: number) => {
-    const h = Math.floor(m / 60);
-    const rem = m % 60;
-    if (h > 0 && rem > 0) return `${h}h ${rem}m`;
-    if (h > 0) return `${h}h`;
-    return `${rem}m`;
-  };
-  if (min === max) return fmt(min);
-  return `${fmt(min)} - ${fmt(max)}`;
 }
 
 function formatDateTime(iso: string): string {
@@ -80,12 +66,11 @@ export default function MedicationDetailScreen() {
 
   // Edit form state
   const [editName, setEditName] = useState("");
-  const [editMinH, setEditMinH] = useState("");
-  const [editMinM, setEditMinM] = useState("");
-  const [editMaxH, setEditMaxH] = useState("");
-  const [editMaxM, setEditMaxM] = useState("");
+  const [editCooldownMin, setEditCooldownMin] = useState(0);
+  const [editCooldownMax, setEditCooldownMax] = useState(0);
   const [editNotes, setEditNotes] = useState("");
   const [editNotifications, setEditNotifications] = useState(true);
+  const [editKey, setEditKey] = useState(0);
 
   const medId = parseInt(id ?? "0", 10);
 
@@ -109,42 +94,36 @@ export default function MedicationDetailScreen() {
     if (!medication) return;
     setEditName(medication.name);
     setEditNotes(medication.notes ?? "");
-    const min = minutesToHM(medication.cooldownMin);
-    setEditMinH(min.h > 0 ? String(min.h) : "");
-    setEditMinM(min.m > 0 ? String(min.m) : "");
-    const max = minutesToHM(medication.cooldownMax);
-    setEditMaxH(max.h > 0 ? String(max.h) : "");
-    setEditMaxM(max.m > 0 ? String(max.m) : "");
+    setEditCooldownMin(medication.cooldownMin);
+    setEditCooldownMax(medication.cooldownMax);
     setEditNotifications((medication.notifyEnabled ?? 1) === 1);
+    setEditKey((k) => k + 1);
     setEditing(true);
   }, [medication]);
 
   const handleSave = useCallback(async () => {
     const trimmedName = editName.trim();
     if (!trimmedName) {
-      Alert.alert("", t("medication.name"));
+      Alert.alert("", t("medication.nameRequired"));
       return;
     }
 
-    const cooldownMin = (parseInt(editMinH, 10) || 0) * 60 + (parseInt(editMinM, 10) || 0);
-    const cooldownMax = (parseInt(editMaxH, 10) || 0) * 60 + (parseInt(editMaxM, 10) || 0);
-
-    if (cooldownMin > cooldownMax && cooldownMax > 0) {
-      Alert.alert("", `${t("medication.cooldownMin")} > ${t("medication.cooldownMax")}`);
+    if (editCooldownMin > editCooldownMax && editCooldownMax > 0) {
+      Alert.alert("", t("medication.minExceedsMax"));
       return;
     }
 
     await updateMedication(medId, {
       name: trimmedName,
-      cooldownMin,
-      cooldownMax: cooldownMax > 0 ? cooldownMax : cooldownMin,
+      cooldownMin: editCooldownMin,
+      cooldownMax: editCooldownMax > 0 ? editCooldownMax : editCooldownMin,
       notes: editNotes.trim(),
       notifyEnabled: editNotifications ? 1 : 0,
     });
 
     setEditing(false);
     await loadData();
-  }, [editName, editMinH, editMinM, editMaxH, editMaxM, editNotes, editNotifications, medId, loadData, t]);
+  }, [editName, editCooldownMin, editCooldownMax, editNotes, editNotifications, medId, loadData, t]);
 
   const handleDelete = useCallback(() => {
     Alert.alert(t("medication.delete"), t("medication.deleteConfirm"), [
@@ -162,15 +141,6 @@ export default function MedicationDetailScreen() {
 
   const inputStyle = [
     styles.input,
-    {
-      backgroundColor: isDark ? colors.surfaceDark : colors.surface,
-      color: isDark ? colors.textDark : colors.text,
-      borderColor: isDark ? colors.borderDark : colors.border,
-    },
-  ];
-
-  const smallInputStyle = [
-    styles.smallInput,
     {
       backgroundColor: isDark ? colors.surfaceDark : colors.surface,
       color: isDark ? colors.textDark : colors.text,
@@ -249,68 +219,20 @@ export default function MedicationDetailScreen() {
               />
 
               <ThemedText style={styles.label}>{t("medication.cooldownMin")}</ThemedText>
-              <View style={styles.row}>
-                <View style={styles.rowField}>
-                  <TextInput
-                    style={smallInputStyle}
-                    value={editMinH}
-                    onChangeText={setEditMinH}
-                    placeholder="0"
-                    placeholderTextColor={colors.textSecondary}
-                    keyboardType="number-pad"
-                    accessibilityLabel={`${t("medication.cooldownMin")} ${t("medication.hours")}`}
-                  />
-                  <ThemedText variant="secondary" style={styles.unit}>
-                    {t("medication.hours")}
-                  </ThemedText>
-                </View>
-                <View style={styles.rowField}>
-                  <TextInput
-                    style={smallInputStyle}
-                    value={editMinM}
-                    onChangeText={setEditMinM}
-                    placeholder="0"
-                    placeholderTextColor={colors.textSecondary}
-                    keyboardType="number-pad"
-                    accessibilityLabel={`${t("medication.cooldownMin")} ${t("medication.minutes")}`}
-                  />
-                  <ThemedText variant="secondary" style={styles.unit}>
-                    {t("medication.minutes")}
-                  </ThemedText>
-                </View>
-              </View>
+              <DurationInput
+                key={`min-${editKey}`}
+                value={editCooldownMin}
+                onChange={setEditCooldownMin}
+                accessibilityLabelPrefix={t("medication.cooldownMin")}
+              />
 
               <ThemedText style={styles.label}>{t("medication.cooldownMax")}</ThemedText>
-              <View style={styles.row}>
-                <View style={styles.rowField}>
-                  <TextInput
-                    style={smallInputStyle}
-                    value={editMaxH}
-                    onChangeText={setEditMaxH}
-                    placeholder="0"
-                    placeholderTextColor={colors.textSecondary}
-                    keyboardType="number-pad"
-                    accessibilityLabel={`${t("medication.cooldownMax")} ${t("medication.hours")}`}
-                  />
-                  <ThemedText variant="secondary" style={styles.unit}>
-                    {t("medication.hours")}
-                  </ThemedText>
-                </View>
-                <View style={styles.rowField}>
-                  <TextInput
-                    style={smallInputStyle}
-                    value={editMaxM}
-                    onChangeText={setEditMaxM}
-                    placeholder="0"
-                    placeholderTextColor={colors.textSecondary}
-                    keyboardType="number-pad"
-                    accessibilityLabel={`${t("medication.cooldownMax")} ${t("medication.minutes")}`}
-                  />
-                  <ThemedText variant="secondary" style={styles.unit}>
-                    {t("medication.minutes")}
-                  </ThemedText>
-                </View>
-              </View>
+              <DurationInput
+                key={`max-${editKey}`}
+                value={editCooldownMax}
+                onChange={setEditCooldownMax}
+                accessibilityLabelPrefix={t("medication.cooldownMax")}
+              />
 
               <ThemedText style={styles.label}>{t("medication.notes")}</ThemedText>
               <TextInput
@@ -362,7 +284,7 @@ export default function MedicationDetailScreen() {
                   {t("medication.cooldownMin")} / {t("medication.cooldownMax")}
                 </ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {formatCooldown(medication.cooldownMin, medication.cooldownMax)}
+                  {formatCooldownRange(medication.cooldownMin, medication.cooldownMax)}
                 </ThemedText>
 
                 {medication.notes ? (
@@ -449,33 +371,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 17,
   },
-  smallInput: {
-    flex: 1,
-    minHeight: 44,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 17,
-    textAlign: "center",
-  },
   multiline: {
     minHeight: 80,
     textAlignVertical: "top",
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  rowField: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  unit: {
-    fontSize: 14,
-    minWidth: 48,
   },
   switchRow: {
     flexDirection: "row",

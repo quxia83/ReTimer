@@ -62,6 +62,8 @@ function groupByDate(
   }));
 }
 
+const PAGE_SIZE = 100;
+
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const isDark = useColorScheme() === "dark";
@@ -71,22 +73,40 @@ export default function HistoryScreen() {
     number | null
   >(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const loadData = useCallback(async () => {
     const [doseRows, medRows] = await Promise.all([
-      getDoseHistory(selectedMedicationId ?? undefined),
+      getDoseHistory(selectedMedicationId ?? undefined, PAGE_SIZE, 0),
       getAllMedications(),
     ]);
-    setLogs(
-      doseRows.map((r) => ({
-        id: r.id,
-        medicationId: r.medicationId,
-        medicationName: r.medicationName,
-        takenAt: r.takenAt,
-      }))
-    );
+    const mapped = doseRows.map((r) => ({
+      id: r.id,
+      medicationId: r.medicationId,
+      medicationName: r.medicationName,
+      takenAt: r.takenAt,
+    }));
+    setLogs(mapped);
+    setHasMore(mapped.length >= PAGE_SIZE);
     setMedications(medRows.map((m) => ({ id: m.id, name: m.name })));
   }, [selectedMedicationId]);
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore) return;
+    const doseRows = await getDoseHistory(
+      selectedMedicationId ?? undefined,
+      PAGE_SIZE,
+      logs.length
+    );
+    const mapped = doseRows.map((r) => ({
+      id: r.id,
+      medicationId: r.medicationId,
+      medicationName: r.medicationName,
+      takenAt: r.takenAt,
+    }));
+    setLogs((prev) => [...prev, ...mapped]);
+    setHasMore(mapped.length >= PAGE_SIZE);
+  }, [hasMore, selectedMedicationId, logs.length]);
 
   useFocusEffect(
     useCallback(() => {
@@ -233,6 +253,8 @@ export default function HistoryScreen() {
           )}
           refreshing={refreshing}
           onRefresh={handleRefresh}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
           showsVerticalScrollIndicator={false}
           stickySectionHeadersEnabled
         />

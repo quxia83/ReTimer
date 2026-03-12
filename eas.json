@@ -1,0 +1,21 @@
+{
+  "cli": {
+    "version": ">= 3.0.0",
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "production": {
+      "ios": {
+        "simulator": false,
+        "buildConfiguration": "Release"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6759615297"
+      }
+    }
+  }
+}

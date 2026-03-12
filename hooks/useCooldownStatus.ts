@@ -49,13 +49,21 @@ export function useCooldownStatus(
     setState(calculate());
     if (!lastTakenAt) return;
 
-    const interval = setInterval(() => {
+    // Dynamic tick: every second for < 1 hour, every minute for < 1 day, every hour otherwise
+    let timeout: ReturnType<typeof setTimeout>;
+    const tick = () => {
       const newState = calculate();
       setState(newState);
-      if (newState.status === "green") clearInterval(interval);
-    }, 1000);
+      if (newState.status === "green") return;
+      const r = newState.remainingSeconds;
+      const delay = r > 86400 ? 3600000 : r > 3600 ? 60000 : 1000;
+      timeout = setTimeout(tick, delay);
+    };
+    const r0 = calculate().remainingSeconds;
+    const delay0 = r0 > 86400 ? 3600000 : r0 > 3600 ? 60000 : 1000;
+    timeout = setTimeout(tick, delay0);
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, [calculate, lastTakenAt]);
 
   return state;

@@ -16,6 +16,7 @@ import { getAllMedications } from "@/db/queries/medications";
 import { getLastDose, logDose } from "@/db/queries/doseLogs";
 import { scheduleCooldownNotification } from "@/lib/notifications";
 import { colors } from "@/lib/constants";
+import { formatCountdown, formatDuration } from "@/lib/duration";
 
 interface MedicationRow {
   id: number;
@@ -99,14 +100,14 @@ export default function DashboardScreen() {
         await doLog();
       } else {
         const elapsed = item.lastDoseAt
-          ? formatElapsed(
+          ? formatCountdown(
               Math.floor(
                 (Date.now() - new Date(item.lastDoseAt).getTime()) / 1000
               )
             )
           : "";
-        const minStr = formatMinutes(item.medication.cooldownMin);
-        const maxStr = formatMinutes(item.medication.cooldownMax);
+        const minStr = formatDuration(item.medication.cooldownMin);
+        const maxStr = formatDuration(item.medication.cooldownMax);
 
         Alert.alert(
           t("dose.logConfirmTitle"),
@@ -197,21 +198,6 @@ function getCooldownStatus(
   if (elapsed >= cooldownMax * 60) return "green";
   if (elapsed >= cooldownMin * 60) return "yellow";
   return "red";
-}
-
-function formatElapsed(totalSeconds: number): string {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-}
-
-function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
 }
 
 const styles = StyleSheet.create({

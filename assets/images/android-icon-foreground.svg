@@ -1,0 +1,31 @@
+<svg width="108" height="108" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#43A047"/>
+    </linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFCA28"/>
+      <stop offset="100%" stop-color="#F9A825"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EF5350"/>
+      <stop offset="100%" stop-color="#E53935"/>
+    </linearGradient>
+  </defs>
+  <!-- Track -->
+  <circle cx="54" cy="54" r="30" fill="none" stroke="#E0E0E0" stroke-width="5"/>
+  <!-- Green arc -->
+  <circle cx="54" cy="54" r="30" fill="none" stroke="url(#green)" stroke-width="5"
+    stroke-dasharray="86.5 188.5" stroke-dashoffset="-77.7" stroke-linecap="round"/>
+  <!-- Yellow arc -->
+  <circle cx="54" cy="54" r="30" fill="none" stroke="url(#yellow)" stroke-width="5"
+    stroke-dasharray="39.3 188.5" stroke-dashoffset="-38.4" stroke-linecap="round"/>
+  <!-- Red arc -->
+  <circle cx="54" cy="54" r="30" fill="none" stroke="url(#red)" stroke-width="5"
+    stroke-dasharray="31.4 188.5" stroke-linecap="round"/>
+  <!-- Clock hand -->
+  <line x1="54" y1="54" x2="54" y2="28" stroke="#1565C0" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Center dot -->
+  <circle cx="54" cy="54" r="3.2" fill="#1565C0"/>
+</svg>

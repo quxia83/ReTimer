@@ -2,6 +2,7 @@ import { FlatList, Pressable, StyleSheet, useColorScheme, View } from "react-nat
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/Themed";
 import { colors } from "@/lib/constants";
+import { formatCooldownRange } from "@/lib/duration";
 
 export interface Preset {
   name: string;
@@ -37,21 +38,6 @@ const PRESETS: Preset[] = [
   // Personal
   { name: "Haircut", cooldownMin: 20160, cooldownMax: 60480, notes: "", category: "personal" },
 ];
-
-function formatCooldown(min: number, max: number): string {
-  const fmtDuration = (m: number) => {
-    const days = Math.floor(m / 1440);
-    const hours = Math.floor((m % 1440) / 60);
-    const rem = m % 60;
-    if (days > 0 && hours > 0) return `${days}d ${hours}h`;
-    if (days > 0) return `${days}d`;
-    if (hours > 0 && rem > 0) return `${hours}h ${rem}m`;
-    if (hours > 0) return `${hours}h`;
-    return `${rem}m`;
-  };
-  if (min === max) return fmtDuration(min);
-  return `${fmtDuration(min)}-${fmtDuration(max)}`;
-}
 
 const CATEGORY_ORDER = ["health", "vehicle", "home", "personal"];
 
@@ -144,7 +130,7 @@ export function PresetPicker({ onSelect }: PresetPickerProps) {
       >
         <ThemedText style={styles.name}>{preset.name}</ThemedText>
         <ThemedText variant="secondary" style={styles.cooldown}>
-          {formatCooldown(preset.cooldownMin, preset.cooldownMax)}
+          {formatCooldownRange(preset.cooldownMin, preset.cooldownMax)}
         </ThemedText>
         {preset.notes ? (
           <ThemedText variant="secondary" style={styles.notes}>

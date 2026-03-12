@@ -15,13 +15,10 @@ import { useRouter, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { Button } from "@/components/ui/Button";
+import { DurationInput } from "@/components/DurationInput";
 import { PresetPicker, Preset } from "@/components/PresetPicker";
 import { insertMedication } from "@/db/queries/medications";
 import { colors } from "@/lib/constants";
-
-function minutesToHM(total: number) {
-  return { h: Math.floor(total / 60), m: total % 60 };
-}
 
 export default function AddMedicationScreen() {
   const { t } = useTranslation();
@@ -29,13 +26,12 @@ export default function AddMedicationScreen() {
   const isDark = useColorScheme() === "dark";
 
   const [name, setName] = useState("");
-  const [minH, setMinH] = useState("");
-  const [minM, setMinM] = useState("");
-  const [maxH, setMaxH] = useState("");
-  const [maxM, setMaxM] = useState("");
+  const [cooldownMin, setCooldownMin] = useState(0);
+  const [cooldownMax, setCooldownMax] = useState(0);
   const [notes, setNotes] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [showPresets, setShowPresets] = useState(false);
+  const [presetKey, setPresetKey] = useState(0);
 
   const inputStyle = [
     styles.input,
@@ -46,49 +42,24 @@ export default function AddMedicationScreen() {
     },
   ];
 
-  const smallInputStyle = [
-    styles.smallInput,
-    {
-      backgroundColor: isDark ? colors.surfaceDark : colors.surface,
-      color: isDark ? colors.textDark : colors.text,
-      borderColor: isDark ? colors.borderDark : colors.border,
-    },
-  ];
-
   const handlePresetSelect = useCallback((preset: Preset) => {
     setName(preset.name);
     setNotes(preset.notes);
-    if (preset.cooldownMin > 0) {
-      const min = minutesToHM(preset.cooldownMin);
-      setMinH(min.h > 0 ? String(min.h) : "");
-      setMinM(min.m > 0 ? String(min.m) : "");
-    } else {
-      setMinH("");
-      setMinM("");
-    }
-    if (preset.cooldownMax > 0) {
-      const max = minutesToHM(preset.cooldownMax);
-      setMaxH(max.h > 0 ? String(max.h) : "");
-      setMaxM(max.m > 0 ? String(max.m) : "");
-    } else {
-      setMaxH("");
-      setMaxM("");
-    }
+    setCooldownMin(preset.cooldownMin);
+    setCooldownMax(preset.cooldownMax);
+    setPresetKey((k) => k + 1); // Force DurationInput to re-derive unit
     setShowPresets(false);
   }, []);
 
   const handleSave = useCallback(async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      Alert.alert("", t("medication.name"));
+      Alert.alert("", t("medication.nameRequired"));
       return;
     }
 
-    const cooldownMin = (parseInt(minH, 10) || 0) * 60 + (parseInt(minM, 10) || 0);
-    const cooldownMax = (parseInt(maxH, 10) || 0) * 60 + (parseInt(maxM, 10) || 0);
-
     if (cooldownMin > cooldownMax && cooldownMax > 0) {
-      Alert.alert("", `${t("medication.cooldownMin")} > ${t("medication.cooldownMax")}`);
+      Alert.alert("", t("medication.minExceedsMax"));
       return;
     }
 
@@ -101,7 +72,7 @@ export default function AddMedicationScreen() {
     });
 
     router.back();
-  }, [name, minH, minM, maxH, maxM, notes, notifications, router, t]);
+  }, [name, cooldownMin, cooldownMax, notes, notifications, router, t]);
 
   return (
     <ThemedView style={styles.container}>
@@ -154,69 +125,21 @@ export default function AddMedicationScreen() {
 
           {/* Cooldown Min */}
           <ThemedText style={styles.label}>{t("medication.cooldownMin")}</ThemedText>
-          <View style={styles.row}>
-            <View style={styles.rowField}>
-              <TextInput
-                style={smallInputStyle}
-                value={minH}
-                onChangeText={setMinH}
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="number-pad"
-                accessibilityLabel={`${t("medication.cooldownMin")} ${t("medication.hours")}`}
-              />
-              <ThemedText variant="secondary" style={styles.unit}>
-                {t("medication.hours")}
-              </ThemedText>
-            </View>
-            <View style={styles.rowField}>
-              <TextInput
-                style={smallInputStyle}
-                value={minM}
-                onChangeText={setMinM}
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="number-pad"
-                accessibilityLabel={`${t("medication.cooldownMin")} ${t("medication.minutes")}`}
-              />
-              <ThemedText variant="secondary" style={styles.unit}>
-                {t("medication.minutes")}
-              </ThemedText>
-            </View>
-          </View>
+          <DurationInput
+            key={`min-${presetKey}`}
+            value={cooldownMin}
+            onChange={setCooldownMin}
+            accessibilityLabelPrefix={t("medication.cooldownMin")}
+          />
 
           {/* Cooldown Max */}
           <ThemedText style={styles.label}>{t("medication.cooldownMax")}</ThemedText>
-          <View style={styles.row}>
-            <View style={styles.rowField}>
-              <TextInput
-                style={smallInputStyle}
-                value={maxH}
-                onChangeText={setMaxH}
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="number-pad"
-                accessibilityLabel={`${t("medication.cooldownMax")} ${t("medication.hours")}`}
-              />
-              <ThemedText variant="secondary" style={styles.unit}>
-                {t("medication.hours")}
-              </ThemedText>
-            </View>
-            <View style={styles.rowField}>
-              <TextInput
-                style={smallInputStyle}
-                value={maxM}
-                onChangeText={setMaxM}
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="number-pad"
-                accessibilityLabel={`${t("medication.cooldownMax")} ${t("medication.minutes")}`}
-              />
-              <ThemedText variant="secondary" style={styles.unit}>
-                {t("medication.minutes")}
-              </ThemedText>
-            </View>
-          </View>
+          <DurationInput
+            key={`max-${presetKey}`}
+            value={cooldownMax}
+            onChange={setCooldownMax}
+            accessibilityLabelPrefix={t("medication.cooldownMax")}
+          />
 
           {/* Notes */}
           <ThemedText style={styles.label}>{t("medication.notes")}</ThemedText>
@@ -295,33 +218,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 17,
   },
-  smallInput: {
-    flex: 1,
-    minHeight: 44,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 17,
-    textAlign: "center",
-  },
   multiline: {
     minHeight: 80,
     textAlignVertical: "top",
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  rowField: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  unit: {
-    fontSize: 14,
-    minWidth: 48,
   },
   switchRow: {
     flexDirection: "row",

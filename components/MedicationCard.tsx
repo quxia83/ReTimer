@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ThemedText } from "@/components/Themed";
 import { useCooldownStatus, CooldownStatus } from "@/hooks/useCooldownStatus";
 import { colors } from "@/lib/constants";
+import { formatCountdown } from "@/lib/duration";
 
 interface MedicationCardProps {
   medication: {
@@ -21,23 +22,17 @@ interface MedicationCardProps {
   onPress: (medicationId: number) => void;
 }
 
-function formatCountdown(totalSeconds: number): string {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
-}
-
-function formatLastTaken(dateStr: string): string {
+function formatLastTaken(
+  dateStr: string,
+  t: (key: string, opts?: Record<string, string>) => string
+): string {
   const date = new Date(dateStr);
   const timeStr = format(date, "h:mm a");
   if (isToday(date)) {
-    return `Today ${timeStr}`;
+    return `${t("history.today")} ${timeStr}`;
   }
   if (isYesterday(date)) {
-    return `Yesterday ${timeStr}`;
+    return `${t("history.yesterday")} ${timeStr}`;
   }
   return format(date, "MMM d h:mm a");
 }
@@ -91,7 +86,7 @@ export function MedicationCard({
           });
 
   const lastTakenText = lastDoseAt
-    ? t("dose.lastTaken", { time: formatLastTaken(lastDoseAt) })
+    ? t("dose.lastTaken", { time: formatLastTaken(lastDoseAt, t) })
     : t("dose.neverTaken");
 
   // Descriptive label for VoiceOver: e.g. "Ibuprofen: red, wait 2h 15m"

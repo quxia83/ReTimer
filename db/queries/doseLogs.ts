@@ -21,7 +21,7 @@ export async function getLastDose(medicationId: number) {
   return rows[0] ?? null;
 }
 
-export async function getDoseHistory(medicationId?: number) {
+export async function getDoseHistory(medicationId?: number, limit = 100, offset = 0) {
   const query = db
     .select({
       id: doseLogs.id,
@@ -31,7 +31,9 @@ export async function getDoseHistory(medicationId?: number) {
     })
     .from(doseLogs)
     .innerJoin(medications, eq(doseLogs.medicationId, medications.id))
-    .orderBy(desc(doseLogs.takenAt));
+    .orderBy(desc(doseLogs.takenAt))
+    .limit(limit)
+    .offset(offset);
 
   if (medicationId) {
     return query.where(eq(doseLogs.medicationId, medicationId));

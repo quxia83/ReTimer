@@ -26,6 +26,8 @@
     "deleteConfirm": "Are you sure you want to delete this tracker? All history will also be removed.",
     "fromPreset": "Choose from Presets",
     "custom": "Custom Tracker",
+    "nameRequired": "Please enter a name for this tracker.",
+    "minExceedsMax": "Minimum interval cannot exceed maximum interval.",
     "hours": "hours",
     "minutes": "minutes",
     "selectPreset": "Double-tap to select this preset",
@@ -44,8 +46,8 @@
     "longPressToDelete": "Long press to delete"
   },
   "status": {
-    "safe": "Safe to take",
-    "approaching": "Approaching safe",
+    "safe": "Ready",
+    "approaching": "Almost ready",
     "wait": "Wait {{time}}",
     "approachingTime": "{{time}} remaining"
   },
@@ -58,6 +60,9 @@
     "yesterday": "Yesterday",
     "deleteConfirm": "Delete this log entry?",
     "deleted": "Log entry deleted"
+  },
+  "notification": {
+    "intervalComplete": "{{name}} interval is complete."
   },
   "settings": {
     "title": "Settings",
@@ -73,7 +78,7 @@
     "developer": "Developer"
   },
   "categories": {
-    "health": "Health & Medication",
+    "health": "Health",
     "vehicle": "Vehicle",
     "home": "Home & Appliance",
     "personal": "Personal Care",
@@ -97,6 +102,18 @@
     "haircut": "Haircut",
     "dentalCheckup": "Dental Checkup",
     "eyeExam": "Eye Exam"
+  },
+  "duration": {
+    "value": "value",
+    "unit": "unit",
+    "selectUnit": "Select Unit",
+    "tapToChangeUnit": "Tap to change unit",
+    "minutes": "minutes",
+    "hours": "hours",
+    "days": "days",
+    "weeks": "weeks",
+    "months": "months",
+    "years": "years"
   },
   "common": {
     "save": "Save",
