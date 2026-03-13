@@ -53,8 +53,10 @@
   },
   "status": {
     "safe": "已就绪",
+    "overdue": "已超期 {{time}}",
     "approaching": "即将就绪",
     "wait": "还需等待 {{time}}",
+    "dueIn": "{{time}} 后到期",
     "approachingTime": "还剩 {{time}}"
   },
   "history": {

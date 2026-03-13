@@ -80,12 +80,28 @@ export function formatDuration(totalMinutes: number): string {
 export function formatCountdown(totalSeconds: number): string {
   if (totalSeconds <= 0) return "0m";
 
-  const days = Math.floor(totalSeconds / 86400);
+  const totalDays = Math.floor(totalSeconds / 86400);
   const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
 
+  // For long durations (>= 30 days), use months + days and omit hours
+  if (totalDays >= 30) {
+    const months = Math.floor(totalDays / 30);
+    const days = totalDays % 30;
+    const parts: string[] = [];
+    parts.push(`${months}mo`);
+    if (days > 0) parts.push(`${days}d`);
+    return parts.join(" ");
+  }
+
+  // For medium durations (>= 7 days), show days only, omit hours
+  if (totalDays >= 7) {
+    return `${totalDays}d`;
+  }
+
+  // Short durations: days + hours or hours + minutes
   const parts: string[] = [];
-  if (days > 0) parts.push(`${days}d`);
+  if (totalDays > 0) parts.push(`${totalDays}d`);
   if (hours > 0 && parts.length < 2) parts.push(`${hours}h`);
   if (minutes > 0 && parts.length < 2) parts.push(`${minutes}m`);
 

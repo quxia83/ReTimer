@@ -53,8 +53,10 @@
   },
   "status": {
     "safe": "Ready",
+    "overdue": "Overdue by {{time}}",
     "approaching": "Almost ready",
     "wait": "Wait {{time}}",
+    "dueIn": "Due in {{time}}",
     "approachingTime": "{{time}} remaining"
   },
   "history": {

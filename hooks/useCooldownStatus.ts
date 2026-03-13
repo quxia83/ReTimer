@@ -2,12 +2,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { differenceInSeconds } from "date-fns";
 
-export type CooldownStatus = "green" | "yellow" | "red";
+export type CooldownStatus = "green" | "yellow" | "red" | "overdue";
 
 interface CooldownState {
   status: CooldownStatus;
   remainingSeconds: number;
   elapsedSeconds: number;
+  overdueSeconds: number;
   lastTakenAt: Date | null;
 }
 
@@ -18,7 +19,7 @@ export function useCooldownStatus(
 ): CooldownState {
   const calculate = useCallback((): CooldownState => {
     if (!lastTakenAt) {
-      return { status: "green", remainingSeconds: 0, elapsedSeconds: 0, lastTakenAt: null };
+      return { status: "green", remainingSeconds: 0, elapsedSeconds: 0, overdueSeconds: 0, lastTakenAt: null };
     }
 
     const taken = new Date(lastTakenAt);
@@ -26,8 +27,14 @@ export function useCooldownStatus(
     const minSeconds = cooldownMin * 60;
     const maxSeconds = cooldownMax * 60;
 
+    // "Overdue" = past max by more than 50% of the cooldown window
+    // This distinguishes "just became ready" from "significantly overdue"
+    const overdueThreshold = maxSeconds + (maxSeconds - minSeconds) * 0.5;
+
     let status: CooldownStatus;
-    if (elapsed >= maxSeconds) {
+    if (elapsed >= overdueThreshold && maxSeconds > 0) {
+      status = "overdue";
+    } else if (elapsed >= maxSeconds) {
       status = "green";
     } else if (elapsed >= minSeconds) {
       status = "yellow";
@@ -39,6 +46,7 @@ export function useCooldownStatus(
       status,
       remainingSeconds: Math.max(0, maxSeconds - elapsed),
       elapsedSeconds: elapsed,
+      overdueSeconds: Math.max(0, elapsed - maxSeconds),
       lastTakenAt: taken,
     };
   }, [lastTakenAt, cooldownMin, cooldownMax]);

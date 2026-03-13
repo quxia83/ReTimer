@@ -37,6 +37,11 @@ function formatLastTaken(
   if (isYesterday(date)) {
     return `${t("history.yesterday")} ${timeStr}`;
   }
+  // For entries older than 7 days, omit the time
+  const daysDiff = Math.floor((Date.now() - date.getTime()) / 86400000);
+  if (daysDiff >= 7) {
+    return format(date, "MMM d, yyyy");
+  }
   return format(date, "MMM d h:mm a");
 }
 
@@ -46,6 +51,8 @@ function getTrafficColor(status: CooldownStatus): string {
       return colors.red;
     case "yellow":
       return colors.yellow;
+    case "overdue":
+      return colors.red;
     case "green":
       return colors.green;
   }
@@ -57,6 +64,8 @@ function getBgColor(status: CooldownStatus, isDark: boolean): string {
       return isDark ? colors.redBgDark : colors.redBg;
     case "yellow":
       return isDark ? colors.yellowBgDark : colors.yellowBg;
+    case "overdue":
+      return isDark ? colors.redBgDark : colors.redBg;
     case "green":
       return isDark ? colors.greenBgDark : colors.greenBg;
   }
@@ -70,7 +79,7 @@ export function TrackerCard({
 }: TrackerCardProps) {
   const { t } = useTranslation();
   const isDark = useColorScheme() === "dark";
-  const { status, remainingSeconds } = useCooldownStatus(
+  const { status, remainingSeconds, overdueSeconds } = useCooldownStatus(
     lastEntryAt,
     tracker.cooldownMin,
     tracker.cooldownMax
@@ -79,26 +88,29 @@ export function TrackerCard({
   const trafficColor = getTrafficColor(status);
   const bgColor = getBgColor(status, isDark);
 
-  const statusText =
-    status === "green"
-      ? t("status.safe")
-      : status === "red"
-        ? t("status.wait", { time: formatCountdown(remainingSeconds) })
-        : t("status.approachingTime", {
-            time: formatCountdown(remainingSeconds),
-          });
+  // Use "Due in" instead of "Wait" for long intervals (> 1 day remaining)
+  const usesDueIn = remainingSeconds > 86400;
+
+  let statusText: string;
+  if (status === "overdue") {
+    statusText = t("status.overdue", { time: formatCountdown(overdueSeconds) });
+  } else if (status === "green") {
+    statusText = t("status.safe");
+  } else if (status === "red") {
+    statusText = usesDueIn
+      ? t("status.dueIn", { time: formatCountdown(remainingSeconds) })
+      : t("status.wait", { time: formatCountdown(remainingSeconds) });
+  } else {
+    statusText = t("status.approachingTime", {
+      time: formatCountdown(remainingSeconds),
+    });
+  }
 
   const lastTakenText = lastEntryAt
     ? t("entry.lastLogged", { time: formatLastTaken(lastEntryAt, t) })
     : t("entry.neverLogged");
 
-  // Descriptive label for VoiceOver
-  const trafficAccessibilityLabel =
-    status === "green"
-      ? `${tracker.name}: ${t("status.safe")}`
-      : status === "red"
-        ? `${tracker.name}: ${t("status.wait", { time: formatCountdown(remainingSeconds) })}`
-        : `${tracker.name}: ${t("status.approachingTime", { time: formatCountdown(remainingSeconds) })}`;
+  const trafficAccessibilityLabel = `${tracker.name}: ${statusText}`;
 
   return (
     <Card
@@ -146,7 +158,7 @@ export function TrackerCard({
 
       <Button
         title={t("entry.log")}
-        variant={status === "green" ? "primary" : "secondary"}
+        variant={status === "green" || status === "overdue" ? "primary" : "secondary"}
         onPress={() => onLogEntry(tracker.id)}
         style={styles.logButton}
       />

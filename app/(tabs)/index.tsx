@@ -83,8 +83,16 @@ export default function DashboardScreen() {
   }, [items]);
 
   const filteredItems = useMemo(() => {
-    if (!selectedCategory) return items;
-    return items.filter((i) => i.tracker.category === selectedCategory);
+    const base = selectedCategory
+      ? items.filter((i) => i.tracker.category === selectedCategory)
+      : items;
+
+    // Sort by urgency: overdue > red > yellow > green
+    return [...base].sort((a, b) => {
+      const priorityA = getItemPriority(a);
+      const priorityB = getItemPriority(b);
+      return priorityA - priorityB;
+    });
   }, [items, selectedCategory]);
 
   useFocusEffect(
@@ -299,6 +307,19 @@ function getCooldownStatus(
   if (elapsed >= cooldownMax * 60) return "green";
   if (elapsed >= cooldownMin * 60) return "yellow";
   return "red";
+}
+
+/** Priority for dashboard sorting (lower = more urgent, shown first) */
+function getItemPriority(item: DashboardItem): number {
+  if (!item.lastEntryAt) return 3; // never logged = green
+  const elapsed = (Date.now() - new Date(item.lastEntryAt).getTime()) / 1000;
+  const minSec = item.tracker.cooldownMin * 60;
+  const maxSec = item.tracker.cooldownMax * 60;
+  const overdueThreshold = maxSec + (maxSec - minSec) * 0.5;
+  if (elapsed >= overdueThreshold && maxSec > 0) return 0; // overdue
+  if (elapsed < minSec) return 1; // red (too soon)
+  if (elapsed < maxSec) return 2; // yellow (approaching)
+  return 3; // green (ready)
 }
 
 const styles = StyleSheet.create({
