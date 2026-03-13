@@ -9,6 +9,7 @@ export const trackers = sqliteTable("trackers", {
   category: text("category").default("other"),
   notifyEnabled: integer("notify_enabled").notNull().default(1),
   isPreset: integer("is_preset").notNull().default(0),
+  isArchived: integer("is_archived").notNull().default(0),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });

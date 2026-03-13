@@ -190,7 +190,7 @@ export default function HistoryScreen() {
     } else {
       entryRows = await getEntryHistory(undefined, PAGE_SIZE, 0);
     }
-    const trackerRows = await getAllTrackers();
+    const trackerRows = await getAllTrackers(true);
     const mapped = entryRows.map((r) => ({
       id: r.id,
       trackerId: r.trackerId,

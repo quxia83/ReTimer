@@ -8,6 +8,13 @@
       "when": 1773254931386,
       "tag": "0000_cuddly_rick_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1773361000000,
+      "tag": "0001_add_is_archived",
+      "breakpoints": true
     }
   ]
 }

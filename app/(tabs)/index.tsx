@@ -14,7 +14,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { TrackerCard } from "@/components/TrackerCard";
 import { EmptyState } from "@/components/EmptyState";
-import { getAllTrackers } from "@/db/queries/trackers";
+import { getAllTrackers, getArchivedTrackers } from "@/db/queries/trackers";
 import { getLastEntry, logEntry } from "@/db/queries/entries";
 import { scheduleCooldownNotification } from "@/lib/notifications";
 import { colors } from "@/lib/constants";
@@ -48,6 +48,8 @@ export default function DashboardScreen() {
   const router = useRouter();
   const isDark = useColorScheme() === "dark";
   const [items, setItems] = useState<DashboardItem[]>([]);
+  const [archivedItems, setArchivedItems] = useState<DashboardItem[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -71,6 +73,26 @@ export default function DashboardScreen() {
       })
     );
     setItems(results);
+
+    const archived = await getArchivedTrackers();
+    const archivedResults: DashboardItem[] = await Promise.all(
+      archived.map(async (tracker) => {
+        const lastEntry = await getLastEntry(tracker.id);
+        return {
+          tracker: {
+            id: tracker.id,
+            name: tracker.name,
+            cooldownMin: tracker.cooldownMin,
+            cooldownMax: tracker.cooldownMax,
+            notes: tracker.notes ?? null,
+            notifyEnabled: tracker.notifyEnabled ?? 1,
+            category: tracker.category ?? null,
+          },
+          lastEntryAt: lastEntry?.loggedAt ?? null,
+        };
+      })
+    );
+    setArchivedItems(archivedResults);
   }, []);
 
   // Derive unique categories from data
@@ -198,11 +220,30 @@ export default function DashboardScreen() {
           ),
         }}
       />
-      {items.length === 0 ? (
+      {items.length === 0 && !showArchived ? (
         <EmptyState onAddFirst={navigateToAdd} />
       ) : (
         <>
-          {categories.length > 1 && (
+          {showArchived && (
+            <View
+              style={[
+                styles.filterBar,
+                { borderBottomColor: isDark ? colors.borderDark : colors.border },
+              ]}
+            >
+              <Pressable
+                onPress={() => setShowArchived(false)}
+                style={styles.backToActive}
+                accessibilityRole="button"
+              >
+                <FontAwesome name="chevron-left" size={12} color={colors.accent} />
+                <ThemedText style={styles.backToActiveText}>
+                  {t("dashboard.title")}
+                </ThemedText>
+              </Pressable>
+            </View>
+          )}
+          {!showArchived && categories.length > 1 && (
             <View
               style={[
                 styles.filterBar,
@@ -275,7 +316,7 @@ export default function DashboardScreen() {
             </View>
           )}
           <FlatList
-            data={filteredItems}
+            data={showArchived ? archivedItems : filteredItems}
             keyExtractor={(item) => String(item.tracker.id)}
             renderItem={({ item }) => (
               <TrackerCard
@@ -285,6 +326,47 @@ export default function DashboardScreen() {
                 onPress={handleCardPress}
               />
             )}
+            ListHeaderComponent={
+              showArchived ? (
+                <View style={styles.archivedHeader}>
+                  <ThemedText style={styles.archivedTitle}>
+                    {t("tracker.archived")}
+                  </ThemedText>
+                  <ThemedText variant="secondary" style={styles.archivedHint}>
+                    {t("tracker.archivedHint")}
+                  </ThemedText>
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={
+              showArchived ? (
+                <View style={styles.emptyArchived}>
+                  <ThemedText variant="secondary">
+                    {t("tracker.archivedEmpty")}
+                  </ThemedText>
+                </View>
+              ) : null
+            }
+            ListFooterComponent={
+              !showArchived && archivedItems.length > 0 ? (
+                <Pressable
+                  onPress={() => setShowArchived(true)}
+                  style={styles.showArchivedButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("tracker.archived")}
+                >
+                  <FontAwesome
+                    name="archive"
+                    size={14}
+                    color={colors.textSecondary}
+                    style={{ marginRight: 6 }}
+                  />
+                  <ThemedText variant="secondary" style={styles.showArchivedText}>
+                    {t("tracker.archived")} ({archivedItems.length})
+                  </ThemedText>
+                </Pressable>
+              ) : null
+            }
             contentContainerStyle={styles.list}
             refreshing={refreshing}
             onRefresh={handleRefresh}
@@ -356,5 +438,41 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 8,
+  },
+  backToActive: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  backToActiveText: {
+    fontSize: 16,
+    color: colors.accent,
+    fontWeight: "500",
+  },
+  archivedHeader: {
+    marginBottom: 12,
+  },
+  archivedTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  archivedHint: {
+    marginTop: 4,
+    fontSize: 14,
+  },
+  emptyArchived: {
+    alignItems: "center",
+    paddingVertical: 24,
+  },
+  showArchivedButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+  },
+  showArchivedText: {
+    fontSize: 14,
   },
 });

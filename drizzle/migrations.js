@@ -28,9 +28,12 @@ CREATE TABLE \`settings\` (
 \t\`value\` text NOT NULL
 );`;
 
+const m0001 = `ALTER TABLE \`trackers\` ADD COLUMN \`is_archived\` integer DEFAULT 0 NOT NULL;`;
+
   export default {
     journal,
     migrations: {
-      m0000
+      m0000,
+      m0001
     }
   }

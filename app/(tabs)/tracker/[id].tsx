@@ -25,7 +25,10 @@ import {
   getTracker,
   updateTracker,
   deleteTracker,
+  archiveTracker,
+  unarchiveTracker,
 } from "@/db/queries/trackers";
+import { cancelCooldownNotification } from "@/lib/notifications";
 import { getEntryHistory, logEntry } from "@/db/queries/entries";
 import { colors } from "@/lib/constants";
 import { formatCooldownRange } from "@/lib/duration";
@@ -38,6 +41,7 @@ interface TrackerData {
   notes: string | null;
   category: string | null;
   notifyEnabled: number | null;
+  isArchived: number;
 }
 
 interface EntryRow {
@@ -147,6 +151,25 @@ export default function TrackerDetailScreen() {
     ]);
   }, [trackerId, router, t]);
 
+  const handleArchiveToggle = useCallback(() => {
+    const isArchived = tracker?.isArchived === 1;
+    if (isArchived) {
+      unarchiveTracker(trackerId).then(() => loadData());
+    } else {
+      Alert.alert(t("tracker.archive"), t("tracker.archiveConfirm"), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("tracker.archive"),
+          onPress: async () => {
+            await archiveTracker(trackerId);
+            await cancelCooldownNotification(trackerId);
+            router.back();
+          },
+        },
+      ]);
+    }
+  }, [tracker, trackerId, router, loadData, t]);
+
   const handleBackfillConfirm = useCallback(async () => {
     await logEntry(trackerId, backfillDate);
     setShowBackfill(false);
@@ -179,6 +202,19 @@ export default function TrackerDetailScreen() {
           headerRight: () =>
             !editing ? (
               <View style={styles.headerRight}>
+                <Pressable
+                  onPress={handleArchiveToggle}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={tracker.isArchived === 1 ? t("tracker.unarchive") : t("tracker.archive")}
+                >
+                  <FontAwesome
+                    name={tracker.isArchived === 1 ? "play" : "pause"}
+                    size={18}
+                    color={colors.accent}
+                    style={styles.headerIcon}
+                  />
+                </Pressable>
                 <Pressable
                   onPress={startEditing}
                   hitSlop={8}

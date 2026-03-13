@@ -1,0 +1,1 @@
+ALTER TABLE `trackers` ADD COLUMN `is_archived` integer DEFAULT 0 NOT NULL;

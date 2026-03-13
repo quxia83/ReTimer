@@ -2,7 +2,7 @@ import * as Notifications from "expo-notifications";
 import i18n from "@/lib/i18n";
 import { db } from "@/db/client";
 import { trackers, entryLogs, settings } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -65,11 +65,11 @@ export async function rescheduleAllNotifications() {
     // Cancel all existing scheduled notifications to avoid duplicates
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    // Get all trackers with notifications enabled
+    // Get all active trackers with notifications enabled
     const allTrackers = await db
       .select()
       .from(trackers)
-      .where(eq(trackers.notifyEnabled, 1));
+      .where(and(eq(trackers.notifyEnabled, 1), eq(trackers.isArchived, 0)));
 
     for (const tracker of allTrackers) {
       // Get last entry for this tracker
