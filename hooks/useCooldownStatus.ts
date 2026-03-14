@@ -62,9 +62,12 @@ export function useCooldownStatus(
     const tick = () => {
       const newState = calculate();
       setState(newState);
-      if (newState.status === "green") return;
+      if (newState.status === "overdue") return;
       const r = newState.remainingSeconds;
-      const delay = r > 86400 ? 3600000 : r > 3600 ? 60000 : 1000;
+      // Green state: tick every minute to detect overdue transition
+      const delay = newState.status === "green"
+        ? 60000
+        : r > 86400 ? 3600000 : r > 3600 ? 60000 : 1000;
       timeout = setTimeout(tick, delay);
     };
     const r0 = calculate().remainingSeconds;

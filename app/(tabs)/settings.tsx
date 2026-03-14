@@ -16,6 +16,7 @@ import { colors } from "@/lib/constants";
 import { db } from "@/db/client";
 import { settings } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import Constants from "expo-constants";
 
 const NOTIFICATIONS_KEY = "notificationsGlobal";
 
@@ -43,7 +44,7 @@ export default function SettingsScreen() {
       if (!granted) {
         Alert.alert(
           t("settings.notifications"),
-          "Notification permission was denied. Please enable it in Settings.",
+          t("tracker.notificationPermDenied"),
           [{ text: t("common.ok") }]
         );
         return;
@@ -153,7 +154,7 @@ export default function SettingsScreen() {
             <ThemedText style={styles.rowLabel}>
               {t("settings.version")}
             </ThemedText>
-            <ThemedText variant="secondary">1.0.0</ThemedText>
+            <ThemedText variant="secondary">{Constants.expoConfig?.version ?? ""}</ThemedText>
           </ThemedView>
           <ThemedView
             style={[styles.row, { backgroundColor: surfaceColor }]}

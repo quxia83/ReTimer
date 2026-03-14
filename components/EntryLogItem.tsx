@@ -12,14 +12,14 @@ export interface EntryLogItemProps {
   onDelete: (id: number) => void;
 }
 
-function formatTimestamp(isoString: string): string {
+function formatTimestamp(isoString: string, yesterdayLabel: string): string {
   const date = new Date(isoString);
   const timeStr = format(date, "h:mm a");
   if (isToday(date)) {
     return timeStr;
   }
   if (isYesterday(date)) {
-    return `Yesterday ${timeStr}`;
+    return `${yesterdayLabel} ${timeStr}`;
   }
   return format(date, "MMM d h:mm a");
 }
@@ -56,7 +56,7 @@ export function EntryLogItem({
         },
         pressed && styles.pressed,
       ]}
-      accessibilityLabel={`${trackerName}, ${formatTimestamp(loggedAt)}`}
+      accessibilityLabel={`${trackerName}, ${formatTimestamp(loggedAt, t("history.yesterday"))}`}
       accessibilityHint={t("history.deleteConfirm")}
       accessibilityRole="button"
     >
@@ -64,7 +64,7 @@ export function EntryLogItem({
         {trackerName}
       </ThemedText>
       <ThemedText variant="secondary" style={styles.time}>
-        {formatTimestamp(loggedAt)}
+        {formatTimestamp(loggedAt, t("history.yesterday"))}
       </ThemedText>
     </Pressable>
   );

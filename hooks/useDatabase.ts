@@ -6,16 +6,21 @@ import { seedPresets } from "../db/seed";
 import { rescheduleAllNotifications } from "../lib/notifications";
 
 export function useDatabase() {
-  const { success, error } = useMigrations(db, migrations);
+  const { success, error: migrationError } = useMigrations(db, migrations);
   const [seeded, setSeeded] = useState(false);
+  const [seedError, setSeedError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (success) {
       seedPresets()
         .then(() => rescheduleAllNotifications())
-        .then(() => setSeeded(true));
+        .then(() => setSeeded(true))
+        .catch((e) => setSeedError(e instanceof Error ? e : new Error(String(e))));
     }
   }, [success]);
 
-  return { isReady: success && seeded, error };
+  return {
+    isReady: success && seeded,
+    error: migrationError ?? seedError,
+  };
 }

@@ -12,31 +12,35 @@ export interface Preset {
   category: string;
 }
 
+interface InternalPreset extends Preset {
+  i18nKey: string;
+}
+
 interface PresetPickerProps {
   onSelect: (preset: Preset) => void;
 }
 
-const PRESETS: Preset[] = [
+const PRESETS: InternalPreset[] = [
   // Health
-  { name: "Ibuprofen (Advil)", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
-  { name: "Acetaminophen (Tylenol)", cooldownMin: 240, cooldownMax: 360, notes: "Max 4g/day", category: "health" },
-  { name: "Aspirin", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
-  { name: "Naproxen (Aleve)", cooldownMin: 480, cooldownMax: 720, notes: "Take with food", category: "health" },
-  { name: "Diphenhydramine (Benadryl)", cooldownMin: 240, cooldownMax: 360, notes: "May cause drowsiness", category: "health" },
-  { name: "Cetirizine (Zyrtec)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily", category: "health" },
-  { name: "Loratadine (Claritin)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily", category: "health" },
-  { name: "Famotidine (Pepcid)", cooldownMin: 720, cooldownMax: 720, notes: "", category: "health" },
-  { name: "Dental Checkup", cooldownMin: 259200, cooldownMax: 525600, notes: "", category: "health" },
-  { name: "Eye Exam", cooldownMin: 525600, cooldownMax: 1051200, notes: "", category: "health" },
+  { i18nKey: "presets.ibuprofen", name: "Ibuprofen (Advil)", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
+  { i18nKey: "presets.acetaminophen", name: "Acetaminophen (Tylenol)", cooldownMin: 240, cooldownMax: 360, notes: "Max 4g/day", category: "health" },
+  { i18nKey: "presets.aspirin", name: "Aspirin", cooldownMin: 240, cooldownMax: 360, notes: "Take with food", category: "health" },
+  { i18nKey: "presets.naproxen", name: "Naproxen (Aleve)", cooldownMin: 480, cooldownMax: 720, notes: "Take with food", category: "health" },
+  { i18nKey: "presets.diphenhydramine", name: "Diphenhydramine (Benadryl)", cooldownMin: 240, cooldownMax: 360, notes: "May cause drowsiness", category: "health" },
+  { i18nKey: "presets.cetirizine", name: "Cetirizine (Zyrtec)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily", category: "health" },
+  { i18nKey: "presets.loratadine", name: "Loratadine (Claritin)", cooldownMin: 1440, cooldownMax: 1440, notes: "Once daily", category: "health" },
+  { i18nKey: "presets.famotidine", name: "Famotidine (Pepcid)", cooldownMin: 720, cooldownMax: 720, notes: "", category: "health" },
+  { i18nKey: "presets.dentalCheckup", name: "Dental Checkup", cooldownMin: 259200, cooldownMax: 525600, notes: "", category: "health" },
+  { i18nKey: "presets.eyeExam", name: "Eye Exam", cooldownMin: 525600, cooldownMax: 1051200, notes: "", category: "health" },
   // Vehicle
-  { name: "Oil Change", cooldownMin: 129600, cooldownMax: 259200, notes: "Check oil level monthly", category: "vehicle" },
-  { name: "Tire Rotation", cooldownMin: 259200, cooldownMax: 388800, notes: "Every 5,000-7,500 miles", category: "vehicle" },
+  { i18nKey: "presets.oilChange", name: "Oil Change", cooldownMin: 129600, cooldownMax: 259200, notes: "Check oil level monthly", category: "vehicle" },
+  { i18nKey: "presets.tireRotation", name: "Tire Rotation", cooldownMin: 259200, cooldownMax: 388800, notes: "Every 5,000-7,500 miles", category: "vehicle" },
   // Home
-  { name: "Air Filter (Home)", cooldownMin: 129600, cooldownMax: 259200, notes: "Check monthly", category: "home" },
-  { name: "Water Filter", cooldownMin: 259200, cooldownMax: 388800, notes: "Replace cartridge", category: "home" },
-  { name: "HVAC Service", cooldownMin: 259200, cooldownMax: 525600, notes: "Annual recommended", category: "home" },
+  { i18nKey: "presets.airFilter", name: "Air Filter (Home)", cooldownMin: 129600, cooldownMax: 259200, notes: "Check monthly", category: "home" },
+  { i18nKey: "presets.waterFilter", name: "Water Filter", cooldownMin: 259200, cooldownMax: 388800, notes: "Replace cartridge", category: "home" },
+  { i18nKey: "presets.hvacService", name: "HVAC Service", cooldownMin: 259200, cooldownMax: 525600, notes: "Annual recommended", category: "home" },
   // Personal
-  { name: "Haircut", cooldownMin: 20160, cooldownMax: 60480, notes: "", category: "personal" },
+  { i18nKey: "presets.haircut", name: "Haircut", cooldownMin: 20160, cooldownMax: 60480, notes: "", category: "personal" },
 ];
 
 const CATEGORY_ORDER = ["health", "vehicle", "home", "personal"];
@@ -113,10 +117,11 @@ export function PresetPicker({ onSelect }: PresetPickerProps) {
       );
     }
 
-    const preset = item.preset!;
+    const preset = item.preset! as InternalPreset;
+    const displayName = t(preset.i18nKey);
     return (
       <Pressable
-        onPress={() => onSelect(preset)}
+        onPress={() => onSelect({ ...preset, name: displayName })}
         style={({ pressed }) => [
           styles.row,
           {
@@ -126,9 +131,9 @@ export function PresetPicker({ onSelect }: PresetPickerProps) {
           pressed && styles.rowPressed,
         ]}
         accessibilityRole="button"
-        accessibilityLabel={preset.name}
+        accessibilityLabel={displayName}
       >
-        <ThemedText style={styles.name}>{preset.name}</ThemedText>
+        <ThemedText style={styles.name}>{displayName}</ThemedText>
         <ThemedText variant="secondary" style={styles.cooldown}>
           {formatCooldownRange(preset.cooldownMin, preset.cooldownMax)}
         </ThemedText>

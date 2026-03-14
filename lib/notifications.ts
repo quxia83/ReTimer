@@ -26,6 +26,15 @@ export async function scheduleCooldownNotification(
   cooldownMaxMinutes: number,
   trackerId: number
 ) {
+  if (cooldownMaxMinutes <= 0) return;
+
+  // Respect global notifications toggle
+  const globalSetting = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.key, "notificationsGlobal"));
+  if (globalSetting.length > 0 && globalSetting[0].value === "false") return;
+
   await cancelCooldownNotification(trackerId);
 
   await Notifications.scheduleNotificationAsync({
