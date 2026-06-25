@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { format, isToday, isYesterday } from "date-fns";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { CooldownRing } from "@/components/ui/CooldownRing";
 import { ThemedText } from "@/components/Themed";
 import { useCooldownStatus, CooldownStatus } from "@/hooks/useCooldownStatus";
 import { colors } from "@/lib/constants";
@@ -31,43 +32,22 @@ function formatLastTaken(
 ): string {
   const date = new Date(dateStr);
   const timeStr = format(date, "h:mm a");
-  if (isToday(date)) {
-    return `${t("history.today")} ${timeStr}`;
-  }
-  if (isYesterday(date)) {
-    return `${t("history.yesterday")} ${timeStr}`;
-  }
-  // For entries older than 7 days, omit the time
+  if (isToday(date)) return `${t("history.today")} ${timeStr}`;
+  if (isYesterday(date)) return `${t("history.yesterday")} ${timeStr}`;
   const daysDiff = Math.floor((Date.now() - date.getTime()) / 86400000);
-  if (daysDiff >= 7) {
-    return format(date, "MMM d, yyyy");
-  }
+  if (daysDiff >= 7) return format(date, "MMM d, yyyy");
   return format(date, "MMM d h:mm a");
 }
 
 function getTrafficColor(status: CooldownStatus): string {
   switch (status) {
     case "red":
+    case "overdue":
       return colors.red;
     case "yellow":
       return colors.yellow;
-    case "overdue":
-      return colors.red;
     case "green":
       return colors.green;
-  }
-}
-
-function getBgColor(status: CooldownStatus, isDark: boolean): string {
-  switch (status) {
-    case "red":
-      return isDark ? colors.redBgDark : colors.redBg;
-    case "yellow":
-      return isDark ? colors.yellowBgDark : colors.yellowBg;
-    case "overdue":
-      return isDark ? colors.redBgDark : colors.redBg;
-    case "green":
-      return isDark ? colors.greenBgDark : colors.greenBg;
   }
 }
 
@@ -78,17 +58,19 @@ export function TrackerCard({
   onPress,
 }: TrackerCardProps) {
   const { t } = useTranslation();
-  const isDark = useColorScheme() === "dark";
-  const { status, remainingSeconds, overdueSeconds } = useCooldownStatus(
-    lastEntryAt,
-    tracker.cooldownMin,
-    tracker.cooldownMax
-  );
+  const { status, remainingSeconds, overdueSeconds, elapsedSeconds } =
+    useCooldownStatus(lastEntryAt, tracker.cooldownMin, tracker.cooldownMax);
 
   const trafficColor = getTrafficColor(status);
-  const bgColor = getBgColor(status, isDark);
 
-  // Use "Due in" instead of "Wait" for long intervals (> 1 day remaining)
+  const maxCooldownSeconds = tracker.cooldownMax * 60;
+  const ringProgress =
+    maxCooldownSeconds > 0
+      ? elapsedSeconds / maxCooldownSeconds
+      : lastEntryAt
+        ? 1
+        : 0;
+
   const usesDueIn = remainingSeconds > 86400;
 
   let statusText: string;
@@ -110,21 +92,16 @@ export function TrackerCard({
     ? t("entry.lastLogged", { time: formatLastTaken(lastEntryAt, t) })
     : t("entry.neverLogged");
 
-  const trafficAccessibilityLabel = `${tracker.name}: ${statusText}`;
-
   return (
     <Card
       onPress={() => onPress(tracker.id)}
-      style={[styles.card, { backgroundColor: bgColor }]}
+      style={styles.card}
       accessibilityLabel={`${tracker.name}, ${statusText}`}
       accessibilityHint={t("entry.tapToViewDetails")}
     >
       <View style={styles.header}>
         <View style={styles.titleArea}>
-          <ThemedText
-            style={styles.name}
-            accessibilityRole="header"
-          >
+          <ThemedText style={styles.name} accessibilityRole="header">
             {tracker.name}
           </ThemedText>
           {tracker.category && tracker.category !== "other" ? (
@@ -134,31 +111,23 @@ export function TrackerCard({
                 : tracker.category}
             </ThemedText>
           ) : null}
-          {tracker.notes ? (
-            <ThemedText variant="secondary" style={styles.notes}>
-              {tracker.notes}
-            </ThemedText>
-          ) : null}
+          <ThemedText style={[styles.statusText, { color: trafficColor }]}>
+            {statusText}
+          </ThemedText>
+          <ThemedText variant="secondary" style={styles.lastTaken}>
+            {lastTakenText}
+          </ThemedText>
         </View>
-        <View
-          style={[styles.trafficLight, { backgroundColor: trafficColor }]}
-          accessible
-          accessibilityRole="image"
-          accessibilityLabel={trafficAccessibilityLabel}
+        <CooldownRing
+          progress={ringProgress}
+          color={trafficColor}
+          isOverdue={status === "overdue"}
         />
       </View>
 
-      <ThemedText style={[styles.statusText, { color: trafficColor }]}>
-        {statusText}
-      </ThemedText>
-
-      <ThemedText variant="secondary" style={styles.lastTaken}>
-        {lastTakenText}
-      </ThemedText>
-
       <Button
         title={t("entry.log")}
-        variant={status === "green" || status === "overdue" ? "primary" : "secondary"}
+        variant="primary"
         onPress={() => onLogEntry(tracker.id)}
         style={styles.logButton}
       />
@@ -173,11 +142,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   titleArea: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 16,
   },
   name: {
     fontSize: 20,
@@ -190,23 +159,16 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-  notes: {
-    marginTop: 2,
-  },
-  trafficLight: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
   statusText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
-    marginTop: 10,
+    marginTop: 8,
   },
   lastTaken: {
-    marginTop: 4,
+    marginTop: 3,
+    fontSize: 13,
   },
   logButton: {
-    marginTop: 14,
+    marginTop: 16,
   },
 });
