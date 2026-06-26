@@ -15,7 +15,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { SymbolView } from "expo-symbols";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -208,10 +208,10 @@ export default function TrackerDetailScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={tracker.isArchived === 1 ? t("tracker.unarchive") : t("tracker.archive")}
                 >
-                  <FontAwesome
-                    name={tracker.isArchived === 1 ? "play" : "pause"}
-                    size={18}
-                    color={colors.accent}
+                  <SymbolView
+                    name={tracker.isArchived === 1 ? "arrow.uturn.up" : "archivebox"}
+                    size={20}
+                    tintColor={colors.accent}
                     style={styles.headerIcon}
                   />
                 </Pressable>
@@ -221,10 +221,10 @@ export default function TrackerDetailScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("common.edit")}
                 >
-                  <FontAwesome
+                  <SymbolView
                     name="pencil"
                     size={20}
-                    color={colors.accent}
+                    tintColor={colors.accent}
                     style={styles.headerIcon}
                   />
                 </Pressable>
@@ -234,10 +234,10 @@ export default function TrackerDetailScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("common.delete")}
                 >
-                  <FontAwesome
+                  <SymbolView
                     name="trash"
                     size={20}
-                    color={colors.destructive}
+                    tintColor={colors.destructive}
                     style={styles.headerIcon}
                   />
                 </Pressable>
