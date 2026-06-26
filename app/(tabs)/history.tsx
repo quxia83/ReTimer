@@ -83,8 +83,7 @@ const PAGE_SIZE = 100;
 const TIMELINE_DAYS = 30;
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-/** Simple dot timeline showing entry frequency over the last 30 days */
-function DotTimeline({
+function BarTimeline({
   logs,
   isDark,
   t,
@@ -96,7 +95,6 @@ function DotTimeline({
   const today = startOfDay(new Date());
   const dayWidth = (SCREEN_WIDTH - 48) / TIMELINE_DAYS;
 
-  // Count entries per day
   const dayCounts = new Map<string, number>();
   for (const log of logs) {
     const key = format(new Date(log.loggedAt), "yyyy-MM-dd");
@@ -105,17 +103,16 @@ function DotTimeline({
 
   const maxCount = Math.max(1, ...Array.from(dayCounts.values()));
 
-  // Build day array (oldest -> newest)
-  const days: { key: string; count: number; label: string }[] = [];
+  const days: { key: string; count: number }[] = [];
   for (let i = TIMELINE_DAYS - 1; i >= 0; i--) {
     const d = subDays(today, i);
     const key = format(d, "yyyy-MM-dd");
-    days.push({
-      key,
-      count: dayCounts.get(key) ?? 0,
-      label: format(d, "d"),
-    });
+    days.push({ key, count: dayCounts.get(key) ?? 0 });
   }
+
+  const trackColor = isDark
+    ? "rgba(255,255,255,0.07)"
+    : "rgba(0,0,0,0.06)";
 
   return (
     <View
@@ -129,21 +126,27 @@ function DotTimeline({
       </ThemedText>
       <View style={timelineStyles.grid}>
         {days.map((day) => {
-          const height = day.count > 0 ? Math.max(6, (day.count / maxCount) * 40) : 0;
+          const barHeight =
+            day.count > 0 ? Math.max(8, (day.count / maxCount) * 60) : 0;
+          const barOpacity =
+            day.count > 0 ? 0.4 + 0.6 * (day.count / maxCount) : 1;
           return (
             <View
               key={day.key}
               style={[timelineStyles.dayColumn, { width: dayWidth }]}
             >
               <View style={timelineStyles.barArea}>
+                <View
+                  style={[timelineStyles.track, { backgroundColor: trackColor }]}
+                />
                 {day.count > 0 && (
                   <View
                     style={[
                       timelineStyles.bar,
                       {
-                        height,
+                        height: barHeight,
                         backgroundColor: colors.accent,
-                        opacity: 0.3 + 0.7 * (day.count / maxCount),
+                        opacity: barOpacity,
                       },
                     ]}
                   />
@@ -153,7 +156,7 @@ function DotTimeline({
           );
         })}
       </View>
-      <View style={[timelineStyles.labelRow, { width: (SCREEN_WIDTH - 48) }]}>
+      <View style={[timelineStyles.labelRow, { width: SCREEN_WIDTH - 48 }]}>
         <ThemedText variant="secondary" style={timelineStyles.dateLabel}>
           {format(subDays(today, TIMELINE_DAYS - 1), "MMM d")}
         </ThemedText>
@@ -417,7 +420,7 @@ export default function HistoryScreen() {
           keyExtractor={(item) => String(item.id)}
           ListHeaderComponent={
             showTimeline ? (
-              <DotTimeline logs={logs} isDark={isDark} t={t} />
+              <BarTimeline logs={logs} isDark={isDark} t={t} />
             ) : null
           }
           renderItem={({ item }) => (
@@ -484,7 +487,8 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingTop: 12,
   },
   sectionHeaderText: {
     fontSize: 13,
@@ -526,20 +530,28 @@ const timelineStyles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     alignItems: "flex-end",
-    height: 48,
+    height: 60,
   },
   dayColumn: {
     alignItems: "center",
   },
   barArea: {
-    height: 40,
+    height: 60,
     justifyContent: "flex-end",
     alignItems: "center",
     width: "100%",
+    position: "relative",
+  },
+  track: {
+    position: "absolute",
+    bottom: 0,
+    width: "60%",
+    height: 3,
+    borderRadius: 3,
   },
   bar: {
     width: "60%",
-    borderRadius: 2,
+    borderRadius: 4,
     minWidth: 3,
   },
   labelRow: {

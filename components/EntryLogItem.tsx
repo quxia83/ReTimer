@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Alert, useColorScheme } from "react-native";
+import { Pressable, StyleSheet, Alert, useColorScheme, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { format, isToday, isYesterday } from "date-fns";
 import * as Haptics from "expo-haptics";
@@ -60,6 +60,7 @@ export function EntryLogItem({
       accessibilityHint={t("history.deleteConfirm")}
       accessibilityRole="button"
     >
+      <View style={styles.dot} />
       <ThemedText style={styles.name} numberOfLines={1}>
         {trackerName}
       </ThemedText>
@@ -82,6 +83,14 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+    marginRight: 10,
+    flexShrink: 0,
   },
   name: {
     fontSize: 16,
