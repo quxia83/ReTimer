@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRouter, useFocusEffect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { SymbolView } from "expo-symbols";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { TrackerCard } from "@/components/TrackerCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -203,6 +203,7 @@ export default function DashboardScreen() {
       <Stack.Screen
         options={{
           title: t("dashboard.title"),
+          headerLargeTitle: true,
           headerRight: () => (
             <Pressable
               onPress={navigateToAdd}
@@ -210,10 +211,10 @@ export default function DashboardScreen() {
               accessibilityLabel={t("dashboard.addTracker")}
               accessibilityRole="button"
             >
-              <FontAwesome
-                name="plus"
-                size={22}
-                color={colors.accent}
+              <SymbolView
+                name="plus.circle"
+                size={26}
+                tintColor={colors.accent}
                 style={styles.headerButton}
               />
             </Pressable>
@@ -236,7 +237,7 @@ export default function DashboardScreen() {
                 style={styles.backToActive}
                 accessibilityRole="button"
               >
-                <FontAwesome name="chevron-left" size={12} color={colors.accent} />
+                <SymbolView name="chevron.left" size={14} tintColor={colors.accent} />
                 <ThemedText style={styles.backToActiveText}>
                   {t("dashboard.title")}
                 </ThemedText>
@@ -355,10 +356,10 @@ export default function DashboardScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t("tracker.archived")}
                 >
-                  <FontAwesome
-                    name="archive"
+                  <SymbolView
+                    name="archivebox"
                     size={14}
-                    color={colors.textSecondary}
+                    tintColor={colors.textSecondary}
                     style={{ marginRight: 6 }}
                   />
                   <ThemedText variant="secondary" style={styles.showArchivedText}>

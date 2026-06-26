@@ -296,7 +296,7 @@ export default function HistoryScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: t("history.title") }} />
+      <Stack.Screen options={{ title: t("history.title"), headerLargeTitle: true }} />
 
       {/* Category filter row */}
       {categories.length > 1 && (

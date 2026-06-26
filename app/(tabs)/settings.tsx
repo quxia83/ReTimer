@@ -83,7 +83,7 @@ export default function SettingsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: t("settings.title") }} />
+      <Stack.Screen options={{ title: t("settings.title"), headerLargeTitle: true }} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}

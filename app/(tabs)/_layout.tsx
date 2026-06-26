@@ -1,15 +1,8 @@
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useColorScheme } from "react-native";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { SymbolView } from "expo-symbols";
 import { colors } from "../../lib/constants";
-
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
-}
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -35,15 +28,25 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t("tabs.trackers"),
-          tabBarIcon: ({ color }) => <TabBarIcon name="repeat" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "timer.circle.fill" : "timer"}
+              size={24}
+              tintColor={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: t("tabs.history"),
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="clock-o" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "clock.fill" : "clock"}
+              size={24}
+              tintColor={color}
+            />
           ),
         }}
       />
@@ -51,7 +54,13 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: t("tabs.settings"),
-          tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "gearshape.fill" : "gearshape"}
+              size={24}
+              tintColor={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen name="tracker/add" options={{ href: null }} />
